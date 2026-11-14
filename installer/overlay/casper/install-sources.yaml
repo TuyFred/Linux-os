@@ -1,0 +1,25 @@
+kernel:
+  default: linux-generic-hwe-24.04
+sources:
+- default: true
+  description:
+    en: Group 2 OS desktop. Wi-Fi, sound, USB, and Firefox are included.
+  id: group2-os-desktop
+  locale_support: langpack
+  name:
+    en: Group 2 OS
+  path: minimal.standard.squashfs
+  preinstalled_langs:
+  - en
+  size: 8270364672
+  type: fsimage-layered
+  variant: desktop
+  variations:
+    standard:
+      path: minimal.standard.squashfs
+      size: 667343900
+    enhanced-secureboot:
+      path: minimal.standard.squashfs
+      size: 667343900
+      snapd_system_label: enhanced-secureboot-desktop
+version: 2

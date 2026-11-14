@@ -1,0 +1,15 @@
+[Unit]
+Description=Group 2 OS first boot after Install
+After=local-fs.target
+Before=display-manager.service
+ConditionPathExists=!/var/lib/group2-os/firstboot-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/group2-firstboot
+RemainAfterExit=yes
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

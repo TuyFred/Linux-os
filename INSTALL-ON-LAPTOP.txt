@@ -1,0 +1,78 @@
+GROUP 2 OS — install on another laptop
+LEARN • BUILD • CREATE • TOGETHER
+
+This creates GROUP2-OS.iso. You copy that file to a USB stick, boot the
+other laptop from USB, and click Install. It works like Ubuntu: Wi-Fi,
+Firefox, files, settings, and a graphical installer are included.
+
+Your linux-master kernel source is kept for the from-source / learning ISO.
+The laptop ISO keeps a stable Linux kernel and laptop drivers so the
+other computer can actually boot and install.
+
+
+ONE-TIME setup on this Windows PC
+---------------------------------
+1. Right-click PowerShell -> Run as administrator
+2. Run:
+
+     wsl --install -d Ubuntu
+
+3. Restart Windows
+4. Open Ubuntu and choose a username and password
+
+
+BUILD the installable ISO
+-------------------------
+In the Ubuntu window:
+
+     cd "/mnt/c/Users/USER/GROUP 2 OS"
+     bash scripts/build.sh laptop
+
+This downloads Ubuntu Desktop (~6 GB), adds GROUP 2 wallpaper, login,
+member folders, and boot/install menus, then writes:
+
+     build/out/GROUP2-OS.iso
+
+The first build can take 1 to 2 hours (download + unpack + rebuild).
+
+
+PUT IT ON A USB STICK
+---------------------
+You need an 8 GB or larger USB stick. This ERASING the USB stick.
+
+1. Download Rufus: https://rufus.ie
+2. Insert the USB stick
+3. Open Rufus
+4. Boot selection -> SELECT -> build\out\GROUP2-OS.iso
+5. Partition scheme: GPT
+6. Target system: UEFI
+7. Click START -> OK
+
+
+INSTALL ON THE OTHER LAPTOP
+---------------------------
+1. Plug the USB stick into the other laptop
+2. Power it on and immediately press the boot menu key:
+     F12  or  F10  or  Esc  or  F2  (depends on the brand)
+3. Choose the USB stick
+4. Choose:  Try or Install GROUP 2 OS
+5. Click Install GROUP 2 OS
+6. Follow the screens (keyboard, Wi-Fi, disk, your name)
+7. Wait until it finishes, remove the USB stick, reboot
+
+After install you get a normal desktop:
+  - GROUP 2 OS name and wallpaper
+  - Firefox, Files, Terminal, Settings
+  - Member folders on the Desktop
+  - Slogan: LEARN • BUILD • CREATE • TOGETHER
+
+
+WARNING
+-------
+Installing to the laptop disk will erase that disk unless you choose
+"Install alongside" / something else. Back up the laptop first.
+
+
+Test in a window first (optional, after WSL is installed)
+---------------------------------------------------------
+     qemu-system-x86_64 -m 2048 -cdrom build/out/GROUP2-OS.iso -boot d

@@ -1,0 +1,16 @@
+PRETTY_NAME="Group 2 OS"
+NAME="Group 2 OS"
+VERSION_ID="1.0"
+VERSION="1.0 (Together)"
+VERSION_CODENAME=together
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="file:///usr/share/group2-os/DESIGN.txt"
+SUPPORT_URL="file:///usr/share/group2-os/DESIGN.txt"
+BUG_REPORT_URL="file:///usr/share/group2-os/DESIGN.txt"
+PRIVACY_POLICY_URL="file:///usr/share/group2-os/DESIGN.txt"
+LOGO=group2-os
+ANSI_COLOR="0;36"
+BUILD_ID="LEARN-BUILD-CREATE-TOGETHER"
+VARIANT="Group 2"
+VARIANT_ID=group2

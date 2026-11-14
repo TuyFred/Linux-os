@@ -1,0 +1,124 @@
+#!/bin/sh
+# GROUP 2 OS console desktop — launcher, terminal, files, settings, apps
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+USER="${USER:-group2}"
+HOME="${HOME:-/root}"
+
+draw_header() {
+	clear
+	printf '\n'
+	printf '  ════════════════════════════════════════════════════════════════\n'
+	printf '   GROUP 2 OS  ·  Linux  ·  LEARN • BUILD • CREATE • TOGETHER\n'
+	printf '  ════════════════════════════════════════════════════════════════\n'
+	printf '   User: %-12s  Host: group2-os     Rwanda · Kigali\n' "$USER"
+	date +"   %H:%M     %a, %b %d %Y"
+	printf '  ────────────────────────────────────────────────────────────────\n'
+}
+
+pause() {
+	printf '\n  Press Enter to return... '
+	read -r _
+}
+
+show_members() {
+	draw_header
+	printf '   GROUP 2  —  7 Members\n\n'
+	if [ -f /etc/group2-os/members ]; then
+		while IFS='|' read -r login name homedir; do
+			printf '     %-12s  %s\n' "$login" "$name"
+			printf '                   folder: /home/%s\n\n' "$homedir"
+		done < /etc/group2-os/members
+	fi
+	pause
+}
+
+show_about() {
+	if [ -x /usr/bin/g2-about ]; then
+		/usr/bin/g2-about
+	else
+		draw_header
+		printf '   GROUP 2 OS Linux 1.0\n'
+		uname -a
+		pause
+	fi
+}
+
+open_files() {
+	if [ -x /usr/bin/g2-files ]; then
+		/usr/bin/g2-files
+	else
+		cd "$HOME" || cd /root
+		ls -la
+		pause
+	fi
+}
+
+open_terminal() {
+	draw_header
+	printf '   GROUP 2 OS Terminal   (type  exit  to return to the desktop)\n\n'
+	cd "$HOME" || cd /root
+	export PS1="GROUP2-OS:\w \$ "
+	/bin/sh
+}
+
+open_settings() {
+	draw_header
+	printf '   Settings\n\n'
+	printf '   Hostname : %s\n' "$(hostname 2>/dev/null || echo group2-os)"
+	printf '   Kernel   : %s\n' "$(uname -r)"
+	printf '   OS       : GROUP 2 OS Linux\n'
+	printf '   Slogan   : LEARN • BUILD • CREATE • TOGETHER\n'
+	printf '   Wallpaper: /usr/share/backgrounds/group2-os.jpg\n'
+	pause
+}
+
+shutdown_os() {
+	printf '\n  Shutting down GROUP 2 OS...\n'
+	sleep 1
+	poweroff -f 2>/dev/null || halt -f 2>/dev/null || reboot -f
+}
+
+while true; do
+	draw_header
+	printf '   Desktop / Applications\n\n'
+	printf '     1)  File Manager\n'
+	printf '     2)  Terminal\n'
+	printf '     3)  Group Members\n'
+	printf '     4)  System Information\n'
+	printf '     5)  Settings\n'
+	printf '     6)  Applications menu\n'
+	printf '     7)  Lock / Sign out\n'
+	printf '     8)  Shut down\n'
+	printf '     9)  Install GROUP 2 OS to this laptop\n\n'
+	printf '   Choose: '
+	read -r CHOICE
+	case "$CHOICE" in
+		1) open_files ;;
+		2) open_terminal ;;
+		3) show_members ;;
+		4) show_about ;;
+		5) open_settings ;;
+		6)
+			draw_header
+			printf '   Applications\n\n'
+			printf '     [G] GROUP 2 OS launcher   (this menu)\n'
+			printf '     [>] Terminal\n'
+			printf '     [F] File Manager\n'
+			printf '     [S] Settings\n'
+			printf '     [A] System Information\n'
+			pause
+			;;
+		7) exit 0 ;;
+		8) shutdown_os ;;
+		9)
+			if [ -x /usr/bin/g2-install ] || [ -x /usr/local/bin/g2-install ]; then
+				g2-install
+			else
+				printf '\n  Installer not found on this image.\n'
+				pause
+			fi
+			;;
+		*) ;;
+	esac
+done

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Appearance
+Name[en]=Appearance
+Comment=Group 2 OS wallpapers, dark and light theme
+Exec=/usr/local/bin/group2-appearance
+Icon=preferences-desktop-theme
+Terminal=false
+Type=Application
+Categories=Settings;GTK;
+StartupNotify=true

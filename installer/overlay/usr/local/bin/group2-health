@@ -1,0 +1,121 @@
+#!/bin/sh
+# Group 2 OS — System Health self-diagnosis
+set -u
+. /usr/local/lib/group2/common.sh
+
+score=100
+report=""
+actions=""
+
+add_ok() { report="$report\n✓ $1 — $2"; }
+add_warn() { score=$((score - 8)); report="$report\n⚠ $1 — $2"; actions="$actions\n• $3"; }
+add_bad() { score=$((score - 18)); report="$report\n✗ $1 — $2"; actions="$actions\n• $3"; }
+
+# Disk /
+disk_pct=$(df -P / 2>/dev/null | awk 'NR==2 {gsub(/%/,"",$5); print $5}')
+disk_pct=${disk_pct:-0}
+if [ "$disk_pct" -ge 90 ]; then
+	add_bad "$MON_DISK" "${disk_pct}% used" "Free disk space with One-Click Optimizer or move large files."
+elif [ "$disk_pct" -ge 80 ]; then
+	add_warn "$MON_DISK" "${disk_pct}% used" "Free approximately space with Optimizer (cache cleanup)."
+else
+	add_ok "$MON_DISK" "${disk_pct}% used — $HEALTH_OK"
+fi
+
+# Memory
+mem_line=$(awk '/MemTotal/ {t=$2} /MemAvailable/ {a=$2} END {if(t>0) printf "%d", (t-a)*100/t; else print 0}' /proc/meminfo 2>/dev/null)
+mem_line=${mem_line:-0}
+if [ "$mem_line" -ge 92 ]; then
+	add_bad "$MON_RAM" "${mem_line}% used" "Close heavy apps or reboot."
+elif [ "$mem_line" -ge 80 ]; then
+	add_warn "$MON_RAM" "${mem_line}% used" "Close unused windows to free RAM."
+else
+	add_ok "$MON_RAM" "${mem_line}% used — $HEALTH_OK"
+fi
+
+# Network
+if command -v nmcli >/dev/null 2>&1; then
+	if nmcli -t -f STATE g 2>/dev/null | grep -qi connected; then
+		add_ok "$MON_NET" "Connected — $HEALTH_OK"
+	else
+		add_warn "$MON_NET" "Not connected" "$WIFI_HELP"
+	fi
+elif ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; then
+	add_ok "$MON_NET" "Online — $HEALTH_OK"
+else
+	add_warn "$MON_NET" "No route / offline" "$WIFI_HELP"
+fi
+
+# Firewall
+if command -v ufw >/dev/null 2>&1; then
+	ufw_s=$(ufw status 2>/dev/null | head -1)
+	case "$ufw_s" in
+		*active*|*Active*) add_ok "$SEC_FW" "$SEC_ENABLED" ;;
+		*) add_warn "$SEC_FW" "$SEC_DISABLED" "Enable firewall: sudo ufw enable (after Install)." ;;
+	esac
+else
+	add_ok "$SEC_FW" "Managed by system"
+fi
+
+# Audio
+if command -v pactl >/dev/null 2>&1; then
+	if pactl info >/dev/null 2>&1; then
+		add_ok "Audio" "$HEALTH_OK"
+	else
+		add_warn "Audio" "PulseAudio not ready" "Check Settings → Sound."
+	fi
+else
+	add_ok "Audio" "$HEALTH_OK"
+fi
+
+# Updates (best-effort, may need network)
+updates=0
+if command -v apt-get >/dev/null 2>&1; then
+	updates=$(apt-get -s upgrade 2>/dev/null | grep -c '^Inst ' || true)
+fi
+if [ "${updates:-0}" -gt 0 ]; then
+	add_warn "$SEC_UPDATES" "$updates available" "Run: sudo apt update && sudo apt upgrade"
+else
+	add_ok "$SEC_UPDATES" "None detected / offline check"
+fi
+
+# Battery optional
+if [ -d /sys/class/power_supply ]; then
+	for b in /sys/class/power_supply/BAT*; do
+		[ -f "$b/capacity" ] || continue
+		cap=$(cat "$b/capacity")
+		st=$(cat "$b/status" 2>/dev/null || echo Unknown)
+		if [ "$cap" -le 15 ] && [ "$st" != "Charging" ]; then
+			add_warn "$MON_BAT" "${cap}% ($st)" "Plug in the charger."
+		else
+			add_ok "$MON_BAT" "${cap}% ($st)"
+		fi
+		break
+	done
+fi
+
+[ "$score" -lt 0 ] && score=0
+[ "$score" -gt 100 ] && score=100
+
+if [ -z "$actions" ]; then
+	actions="\n• System looks healthy. Keep learning and creating."
+	[ "$GROUP2_LANG" = rw ] && actions="\n• Sisitemu imeze neza. Komeza kwiga no guhanga."
+fi
+
+body="$HEALTH_SCORE: ${score}%\n$report\n\n$HEALTH_RECOMMEND:$actions"
+if [ "${1:-}" = "--selftest" ] || [ "${GROUP2_SELFTEST:-}" = 1 ]; then
+	echo "SELFTEST health score=$score"
+	echo "$body" | head -c 400
+	echo
+	[ "$score" -ge 0 ] && [ "$score" -le 100 ] || exit 1
+	echo "SELFTEST health PASS"
+	exit 0
+fi
+g2_info "$HEALTH_TITLE" "$body"
+# Also offer to open optimizer if score low
+if [ "$score" -lt 85 ]; then
+	if g2_zenity --question --title="$HEALTH_TITLE" --text="Open One-Click Optimizer?\nFungura Kunosha Sisitemu?" 2>/dev/null; then
+		exec /usr/local/bin/group2-optimizer
+	fi
+fi
+exit 0

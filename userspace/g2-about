@@ -1,0 +1,31 @@
+#!/bin/sh
+# GROUP 2 OS system information
+
+clear
+printf '\n'
+printf '  ════════════════════════════════════════════════════════════════\n'
+printf '   GROUP 2 OS  —  System Information\n'
+printf '  ════════════════════════════════════════════════════════════════\n'
+printf '\n'
+if [ -f /etc/os-release ]; then
+	. /etc/os-release
+	printf '   OS name     : %s\n' "$PRETTY_NAME"
+	printf '   Version     : %s\n' "$VERSION"
+	printf '   Variant     : %s\n' "$VARIANT"
+	printf '   Build       : %s\n' "$BUILD_ID"
+fi
+printf '   Slogan      : LEARN • BUILD • CREATE • TOGETHER\n'
+printf '   Hostname    : %s\n' "$(hostname 2>/dev/null || echo group2-os)"
+printf '   Kernel      : %s %s\n' "$(uname -s)" "$(uname -r)"
+printf '   Architecture: %s\n' "$(uname -m)"
+printf '   Wallpaper   : /usr/share/backgrounds/group2-os.jpg\n'
+printf '\n   Group members\n'
+if [ -f /etc/group2-os/members ]; then
+	while IFS='|' read -r login name homedir; do
+		printf '     • %s\n' "$name"
+	done < /etc/group2-os/members
+fi
+printf '\n   Powered by Linux  ·  GROUP 2  ·  Kigali, Rwanda\n'
+printf '  ════════════════════════════════════════════════════════════════\n'
+printf '\n  Press Enter to return... '
+read -r _

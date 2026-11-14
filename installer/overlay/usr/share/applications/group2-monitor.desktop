@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Smart System Monitor
+Name[rw]=Igenzura rya Sisitemu
+Comment=CPU, RAM, disk, battery, network, temperature
+Exec=/usr/local/bin/group2-monitor
+Icon=utilities-system-monitor
+Terminal=false
+Type=Application
+Categories=System;
+StartupNotify=true

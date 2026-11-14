@@ -1,0 +1,20 @@
+[Unit]
+Description=Prepare Group 2 OS login and fix Terminal shell
+After=systemd-user-sessions.service casper.service
+Before=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStartPre=-/sbin/modprobe fuse
+# Fix the shell first so Terminal always works even if login prep fails.
+ExecStart=-/usr/local/bin/group2-fix-live-user
+ExecStart=-/usr/local/bin/group2-prepare-login
+# Casper can recreate the live user after us; fix again.
+ExecStartPost=-/bin/sleep 2
+ExecStartPost=-/usr/local/bin/group2-fix-live-user
+StandardOutput=null
+StandardError=null
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

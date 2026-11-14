@@ -1,0 +1,3 @@
+# The DSHELL variable specifies the default login shell on your
+# system
+DSHELL=/bin/bash

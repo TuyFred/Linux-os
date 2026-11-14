@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Install Group 2 OS
+Comment=Install Group 2 OS on this computer — real installer, all steps
+Exec=/usr/local/bin/g2-install
+Icon=system-software-install
+Terminal=false
+Type=Application
+Categories=System;Installer;
+StartupNotify=true
+Keywords=install;setup;group2;

@@ -1,0 +1,49 @@
+#!/bin/sh
+# How Group 2 OS Was Built — presentation helper + Terminal demo
+set -u
+. /usr/local/lib/group2/common.sh
+
+DOC_EN=/usr/share/group2-os/docs/HOW-BUILT.en.md
+DOC_RW=/usr/share/group2-os/docs/HOW-BUILT.rw.md
+[ -f "$DOC_EN" ] || DOC_EN=/usr/share/group2-os/DESIGN.txt
+
+choice=$(g2_zenity --list --title="$HOW_TITLE" --width=520 --height=320 \
+	--text="$HOW_INTRO" \
+	--column="ID" --column="Action" \
+	"en" "$HOW_OPEN_DOC" \
+	"rw" "$HOW_OPEN_RW" \
+	"demo" "$HOW_DEMO" \
+	"close" "$BTN_CLOSE" 2>/dev/null) || exit 0
+
+open_doc() {
+	f=$1
+	[ -f "$f" ] || { g2_info "$HOW_TITLE" "Missing: $f"; return; }
+	if command -v xdg-open >/dev/null 2>&1; then
+		xdg-open "$f" >/dev/null 2>&1 &
+	elif command -v gedit >/dev/null 2>&1; then
+		gedit "$f" >/dev/null 2>&1 &
+	elif command -v gnome-text-editor >/dev/null 2>&1; then
+		gnome-text-editor "$f" >/dev/null 2>&1 &
+	else
+		g2_info "$HOW_TITLE" "$(head -n 40 "$f")"
+	fi
+}
+
+case "$choice" in
+	en) open_doc "$DOC_EN" ;;
+	rw) open_doc "$DOC_RW" ;;
+	demo)
+		demo="printf '\\n  Group 2 OS — identity demo\\n'; cat /etc/os-release | head -8; echo; hostname; uname -r; echo; echo LEARN • BUILD • CREATE • TOGETHER; echo; ls /usr/share/group2-os/docs 2>/dev/null; bash"
+		if command -v gnome-terminal >/dev/null 2>&1; then
+			gnome-terminal --window -- bash -lc "$demo"
+		elif [ -x /usr/local/bin/group2-terminal ]; then
+			# fall back: show in zenity
+			g2_info "$HOW_DEMO" "$(cat /etc/os-release | head -8)
+
+hostname: $(hostname)
+kernel: $(uname -r)
+LEARN • BUILD • CREATE • TOGETHER"
+		fi
+		;;
+esac
+exit 0

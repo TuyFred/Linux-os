@@ -1,0 +1,5 @@
+GROUP 2 OS member profile
+Name: Fred Tuyishime
+Login: fred
+Home: /home/fred-tuyishime
+Desktop folder: Fred Tuyishime

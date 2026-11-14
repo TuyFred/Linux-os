@@ -1,0 +1,33 @@
+#!/bin/sh
+# Language switcher — English / Kinyarwanda for all Group 2 apps
+set -u
+. /usr/local/lib/group2/common.sh
+
+choice=$(g2_zenity --list --title="$LANG_TITLE" --width=420 --height=240 \
+	--text="$LANG_TITLE" \
+	--column="ID" --column="Language" \
+	"en" "$LANG_EN" \
+	"rw" "$LANG_RW" 2>/dev/null) || exit 0
+
+mkdir -p "${HOME}/.config/group2-os"
+printf '%s\n' "$choice" > "${HOME}/.config/group2-os/lang"
+case "$choice" in
+	rw)
+		printf 'LANG=rw_RW.UTF-8\n' > "${HOME}/.config/group2-os/locale-hint"
+		# Try to install full desktop language support when online (optional).
+		if command -v apt-get >/dev/null 2>&1 && ping -c 1 -W 2 archive.ubuntu.com >/dev/null 2>&1; then
+			if g2_zenity --question --title="$APP_LANGUAGE" --width=420 \
+				--text="Install Kinyarwanda language pack for the whole desktop?\nShyira language pack y'Ikinyarwanda kuri desktop yose?" 2>/dev/null; then
+				g2_info "$APP_LANGUAGE" "Installing… / Gushyira…"
+				sudo -n apt-get update -qq >/dev/null 2>&1 || true
+				sudo -n apt-get install -y language-pack-gnome-rw language-pack-rw espeak-ng 2>/dev/null || \
+					pkexec apt-get install -y language-pack-gnome-rw language-pack-rw espeak-ng 2>/dev/null || true
+			fi
+		fi
+		;;
+	*)
+		printf 'LANG=en_US.UTF-8\n' > "${HOME}/.config/group2-os/locale-hint"
+		;;
+esac
+g2_info "$APP_LANGUAGE" "$LANG_DONE"
+exit 0

@@ -1,0 +1,18 @@
+Group 2 OS visual design — keep these screens SEPARATE.
+
+OS name: Group 2 OS
+Slogan: LEARN • BUILD • CREATE • TOGETHER
+
+1) LOGIN SCREEN  = login-background.png + GDM CSS
+   Welcome / password / Sign In look. Never use this as the desktop wallpaper.
+
+2) DESKTOP       = desktop-wallpaper.png
+   Rwanda landscape, logo, flag, member panel.
+   Real folders and a real dock — not painted chrome.
+
+3) BOOT SCREEN = real Plymouth
+   Logo + GROUP 2 OS text + a moving progress bar drawn by the boot system.
+   Not a screenshot of "Loading system...".
+   GRUB shows a normal menu. Original Ubuntu initrd is kept so boot is not frozen.
+
+4) FILE MANAGER  = GTK/Nautilus theme + colored folder icons

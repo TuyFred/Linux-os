@@ -1,0 +1,16 @@
+[Unit]
+Description=Group 2 OS local Gemini backend
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/group2-gemini-backend
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=30
+StartLimitBurst=3
+TimeoutStopSec=5
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

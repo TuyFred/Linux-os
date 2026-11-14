@@ -1,0 +1,51 @@
+#!/bin/sh
+# One-command proof for Group 2 innovation apps (no hanging GUI loops).
+set -u
+export HOME="${HOME:-/tmp/g2-selftest-home}"
+mkdir -p "$HOME/.config/group2-os"
+printf 'en\n' > "$HOME/.config/group2-os/lang"
+unset GROUP2_LANG
+fail=0
+
+run() {
+	name=$1
+	shift
+	if "$@"; then
+		echo "PASS $name"
+	else
+		echo "FAIL $name"
+		fail=1
+	fi
+}
+
+run assistant /usr/local/bin/group2-assistant --selftest
+run health /usr/local/bin/group2-health --selftest
+
+# Language
+printf 'rw\n' > "$HOME/.config/group2-os/lang"
+unset GROUP2_LANG
+. /usr/share/group2-os/i18n/load.sh
+[ "$APP_ASSISTANT" = "Umufasha wa Group 2" ] && echo "PASS kinyarwanda" || { echo "FAIL kinyarwanda"; fail=1; }
+
+# Docs present
+[ -f /usr/share/group2-os/docs/HOW-BUILT.en.md ] && [ -f /usr/share/group2-os/docs/HOW-BUILT.rw.md ] \
+	&& echo "PASS how-built-docs" || { echo "FAIL how-built-docs"; fail=1; }
+
+# Binaries executable
+for b in group2-suite group2-monitor group2-optimizer group2-security group2-how-built group2-language group2-appearance; do
+	[ -x "/usr/local/bin/$b" ] && echo "PASS bin-$b" || { echo "FAIL bin-$b"; fail=1; }
+done
+
+# Mute helpers
+. /usr/local/lib/group2/common.sh
+g2_set_mute muted
+[ "$(g2_speak_state)" = muted ] && echo "PASS mute" || { echo "FAIL mute"; fail=1; }
+g2_set_mute on
+[ "$(g2_speak_state)" = on ] && echo "PASS unmute" || { echo "FAIL unmute"; fail=1; }
+
+if [ "$fail" -eq 0 ]; then
+	echo "UX SELFTEST VERDICT: PASS"
+	exit 0
+fi
+echo "UX SELFTEST VERDICT: FAIL"
+exit 1

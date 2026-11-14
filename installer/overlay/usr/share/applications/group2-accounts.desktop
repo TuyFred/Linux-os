@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Group 2 Accounts
+Name[rw]=Konti za Group 2
+Comment=Create an Administrator or a Standard user
+Comment[rw]=Kora konti y'umuyobozi cyangwa ukoresha busanzwe
+Exec=/usr/local/bin/group2-accounts
+Icon=system-users
+Terminal=false
+Type=Application
+Categories=System;Settings;
+StartupNotify=true
+Keywords=user;account;admin;standard;

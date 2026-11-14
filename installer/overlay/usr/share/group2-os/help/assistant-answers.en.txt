@@ -1,0 +1,20 @@
+# Extra offline Q&A: keywords,comma,separated|Answer text
+update,apt,upgrade,package|After Install, open Terminal and run: sudo apt update && sudo apt upgrade. On the live USB, prefer installing to disk first.
+firefox,browser,web|Firefox is on the dock. Click the Firefox icon to browse the web.
+files,folder,nautilus,documents|Open Files from the dock. Member folders are on the Desktop. Single-click opens folders.
+create user,add user,new user|Open Group 2 Accounts as an administrator. Choose Administrator (full rights) or Standard user (desktop only). The account created during Install is an Administrator. Sign Out to see the new account on the login screen.
+virtualbox,vm,safe graphics|In VirtualBox use VBoxSVGA, 3D Off, Optical first. If the screen is black, choose Group 2 OS (VirtualBox / safe graphics) at boot.
+usb,rufus,boot stick|Write GROUP2-OS.iso with Rufus (GPT/UEFI). Boot the laptop from USB (F12/Esc), then Try or Install Group 2 OS.
+install steps,how to install,install os,install group|Step 4: Try or Install Group 2 OS, open Install Group 2 OS. Step 5: language, keyboard, Wi-Fi, installation type. Step 6: alongside Windows / erase disk / manual (back up first). Step 7: name, computer name, username, password, time zone (Kigali). Step 8: Install, Restart, remove USB, login with YOUR password, install updates. Live password group2 is only for Try.
+erase disk,wipe,alongside|Step 6 disk options: install alongside Windows (if supported), erase disk and install Group 2 OS, or manual partitioning. Erase permanently deletes files — back up first.
+after install,first boot|Step 8: after Restart and removing media, Group 2 OS bootloader then login. Use YOUR account. Sign Out and Restart always return to this login screen.
+sign out,signout,log out|System menu → Log Out. You return to the Group 2 OS login (Welcome / Sign In) with live date and time for your time zone.
+time zone,timezone,kigali,clock,date and time|Login shows live date and time for the system time zone (default Africa/Kigali; set during Install Step 7). Top bar clock also shows date/time.
+slogan,learn,build,create|Our slogan is LEARN • BUILD • CREATE • TOGETHER.
+hostname,group2-os|The computer name is group2-os. In Terminal you see user@group2-os.
+sudo,admin|On live USB, group2 can use sudo. After Install, your created account is the administrator.
+bluetooth|Settings → Bluetooth. Turn Bluetooth on and pair a device.
+sound,audio,volume|Top-right volume icon, or Settings → Sound. Check output device if you hear nothing.
+display,resolution,screen|Settings → Displays. For VirtualBox, safe graphics uses nomodeset if the screen is black.
+shutdown,power off|System menu → Power → Power Off. Use Restart if you want the login screen again after reboot.
+assistant,ai,online|Offline: Group 2 OS help. Online: web answers for any question. Optional: save an OpenAI/Groq key in ~/.config/group2-os/online-api-key for full AI chat.

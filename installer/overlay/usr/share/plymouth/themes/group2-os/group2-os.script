@@ -1,0 +1,108 @@
+# Group 2 OS — real Plymouth boot, not a screenshot.
+Window.SetBackgroundTopColor(0.02, 0.04, 0.08);
+Window.SetBackgroundBottomColor(0.015, 0.03, 0.06);
+
+logo.image = Image("logo.png");
+max_logo = Window.GetHeight() * 0.28;
+if (logo.image.GetHeight() > max_logo)
+{
+    scale = max_logo / logo.image.GetHeight();
+    logo.image = logo.image.Scale(logo.image.GetWidth() * scale, logo.image.GetHeight() * scale);
+}
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX(Window.GetWidth() / 2 - logo.image.GetWidth() / 2);
+logo.sprite.SetY(Window.GetHeight() * 0.18);
+
+title.image = Image.Text("GROUP 2 OS", 1, 1, 1);
+title.sprite = Sprite(title.image);
+title.sprite.SetX(Window.GetWidth() / 2 - title.image.GetWidth() / 2);
+title.sprite.SetY(Window.GetHeight() * 0.50);
+
+linux.image = Image.Text("LINUX", 0.45, 0.72, 1);
+linux.sprite = Sprite(linux.image);
+linux.sprite.SetX(Window.GetWidth() / 2 - linux.image.GetWidth() / 2);
+linux.sprite.SetY(Window.GetHeight() * 0.545);
+
+bar_w = Window.GetWidth() * 0.36;
+bar_h = Window.GetHeight() * 0.014;
+bar_x = Window.GetWidth() / 2 - bar_w / 2;
+bar_y = Window.GetHeight() * 0.62;
+
+empty.image = Image("progress-empty.png");
+empty.image = empty.image.Scale(bar_w, bar_h);
+empty.sprite = Sprite(empty.image);
+empty.sprite.SetX(bar_x);
+empty.sprite.SetY(bar_y);
+
+full.image = Image("progress-full.png");
+full.image = full.image.Scale(bar_w, bar_h);
+full.sprite = Sprite(full.image);
+full.sprite.SetX(bar_x);
+full.sprite.SetY(bar_y);
+full.sprite.SetWindow(0, 0, 1, bar_h);
+
+status_text = "Loading Group 2 OS...";
+mode = Plymouth.GetMode();
+if (mode == "reboot")
+    status_text = "Restarting Group 2 OS...";
+else if (mode == "shutdown")
+    status_text = "Group 2 OS is shutting down...";
+status.image = Image.Text(status_text, 0.82, 0.88, 0.95);
+status.sprite = Sprite(status.image);
+status.sprite.SetX(Window.GetWidth() / 2 - status.image.GetWidth() / 2);
+status.sprite.SetY(Window.GetHeight() * 0.66);
+
+slogan.image = Image.Text("LEARN  •  BUILD  •  CREATE  •  TOGETHER", 0.35, 0.62, 0.95);
+slogan.sprite = Sprite(slogan.image);
+slogan.sprite.SetX(Window.GetWidth() / 2 - slogan.image.GetWidth() / 2);
+slogan.sprite.SetY(Window.GetHeight() * 0.86);
+
+progress = 0.02;
+kernel_progress = 0.02;
+
+fun set_bar(value)
+{
+    if (value < 0.02)
+        value = 0.02;
+    if (value > 1)
+        value = 1;
+    progress = value;
+    full.sprite.SetWindow(0, 0, bar_w * progress, bar_h);
+}
+
+fun progress_callback(duration, value)
+{
+    if (value < 0)
+        value = 0;
+    if (value > 1)
+        value = 1;
+    kernel_progress = value;
+    if (kernel_progress > progress)
+        set_bar(kernel_progress);
+}
+
+Plymouth.SetBootProgressFunction(progress_callback);
+
+fun refresh_callback()
+{
+    # Casper often sends little progress. Keep a real moving bar so boot
+    # is never a frozen screenshot.
+    if (progress < 0.90)
+        set_bar(progress + 0.0035);
+    else if (progress < 0.97)
+        set_bar(progress + 0.0008);
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
+
+fun message_callback(text)
+{
+    if (text)
+    {
+        status.image = Image.Text(text, 0.82, 0.88, 0.95);
+        status.sprite.SetImage(status.image);
+        status.sprite.SetX(Window.GetWidth() / 2 - status.image.GetWidth() / 2);
+    }
+}
+
+Plymouth.SetMessageFunction(message_callback);

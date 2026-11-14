@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Group 2 OS — Landscape</name>
+    <filename>/usr/share/backgrounds/group2-os/group2-os-desktop.png</filename>
+    <filename-dark>/usr/share/backgrounds/group2-os/group2-os-desktop.png</filename-dark>
+    <options>zoom</options>
+    <pcolor>#0b1b3a</pcolor>
+    <scolor>#04101f</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Group 2 OS — Login lake</name>
+    <filename>/usr/share/backgrounds/group2-os/group2-os-login.png</filename>
+    <filename-dark>/usr/share/backgrounds/group2-os/group2-os-login.png</filename-dark>
+    <options>zoom</options>
+    <pcolor>#071422</pcolor>
+    <scolor>#0a1a30</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Group 2 OS — Boot</name>
+    <filename>/usr/share/backgrounds/group2-os/group2-os-boot.png</filename>
+    <filename-dark>/usr/share/backgrounds/group2-os/group2-os-boot.png</filename-dark>
+    <options>zoom</options>
+    <pcolor>#050814</pcolor>
+    <scolor>#050814</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Group 2 OS — Light</name>
+    <filename>/usr/share/backgrounds/group2-os/group2-os-light.png</filename>
+    <filename-dark>/usr/share/backgrounds/group2-os/group2-os-light.png</filename-dark>
+    <options>zoom</options>
+    <pcolor>#e8f4ff</pcolor>
+    <scolor>#c5dcf5</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+</wallpapers>

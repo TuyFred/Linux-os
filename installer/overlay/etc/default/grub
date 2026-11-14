@@ -1,0 +1,13 @@
+# Group 2 OS bootloader. Installed restarts use this menu, then the login screen.
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_TIMEOUT_STYLE=menu
+GRUB_DISTRIBUTOR="Group 2 OS"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_CMDLINE_LINUX=""
+GRUB_GFXMODE=1920x1080,1280x720,1024x768,auto
+GRUB_GFXPAYLOAD_LINUX=keep
+GRUB_BACKGROUND="/usr/share/grub/themes/group2-os/background.png"
+GRUB_THEME="/usr/share/grub/themes/group2-os/theme.txt"
+GRUB_COLOR_NORMAL="white/black"
+GRUB_COLOR_HIGHLIGHT="black/cyan"

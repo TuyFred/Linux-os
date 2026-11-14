@@ -1,0 +1,8 @@
+#!/bin/sh
+# Local-only Gemini backend. The API key stays in /etc/group2-os/secrets.
+set -eu
+if [ "$(id -u)" != "0" ]; then
+	echo "group2-gemini-backend must run as root so the desktop UI never reads the API key." >&2
+	exit 1
+fi
+exec /usr/bin/python3 /usr/local/lib/group2/gemini_backend.py --serve

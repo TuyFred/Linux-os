@@ -1,0 +1,55 @@
+#!/bin/sh
+# Group 2 OS — One-Click Optimizer (safe operations only)
+set -u
+. /usr/local/lib/group2/common.sh
+
+choice=$(g2_zenity --list --title="$OPT_TITLE" --width=520 --height=360 \
+	--text="$OPT_WARN" \
+	--column="ID" --column="Action" \
+	"all" "★ $BTN_RUN (safe clean)" \
+	"cache" "$OPT_CACHE" \
+	"thumbs" "$OPT_THUMBS" \
+	"tmp" "$OPT_TMP" \
+	"startup" "$OPT_STARTUP" \
+	"disk" "$OPT_DISK" \
+	"close" "$BTN_CLOSE" 2>/dev/null) || exit 0
+
+do_cache() {
+	rm -rf "${HOME}/.cache/"* 2>/dev/null || true
+	if command -v apt-get >/dev/null 2>&1; then
+		# User cache only without sudo; try sudo apt clean non-interactively if allowed
+		sudo -n apt-get clean >/dev/null 2>&1 || true
+	fi
+}
+do_thumbs() {
+	rm -rf "${HOME}/.cache/thumbnails/"* 2>/dev/null || true
+}
+do_tmp() {
+	find /tmp -xdev -type f -user "$(id -un)" -mtime +1 -delete 2>/dev/null || true
+}
+do_startup() {
+	if command -v gnome-session-properties >/dev/null 2>&1; then
+		gnome-session-properties >/dev/null 2>&1 &
+	elif command -v gnome-control-center >/dev/null 2>&1; then
+		gnome-control-center applications >/dev/null 2>&1 &
+	fi
+}
+do_disk() {
+	out=$(du -h --max-depth=1 "${HOME}" 2>/dev/null | sort -hr | head -12)
+	g2_info "$OPT_DISK" "$out"
+}
+
+case "$choice" in
+	all)
+		do_cache
+		do_thumbs
+		do_tmp
+		g2_info "$OPT_TITLE" "$OPT_DONE"
+		;;
+	cache) do_cache; g2_info "$OPT_TITLE" "$OPT_DONE" ;;
+	thumbs) do_thumbs; g2_info "$OPT_TITLE" "$OPT_DONE" ;;
+	tmp) do_tmp; g2_info "$OPT_TITLE" "$OPT_DONE" ;;
+	startup) do_startup ;;
+	disk) do_disk ;;
+esac
+exit 0

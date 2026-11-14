@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=How Group 2 OS Was Built
+Name[rw]=Uko Group 2 OS Yubatswe
+Comment=Presentation guide and Terminal demo
+Exec=/usr/local/bin/group2-how-built
+Icon=accessories-text-editor
+Terminal=false
+Type=Application
+Categories=Education;Documentation;
+StartupNotify=true

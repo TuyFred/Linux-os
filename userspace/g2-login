@@ -1,0 +1,68 @@
+#!/bin/sh
+# GROUP 2 OS login screen
+# Demo password for every account: group2
+
+LOGIN_ART="/usr/share/group2-os/login.txt"
+MEMBERS="/etc/group2-os/members"
+PASS_OK="group2"
+
+valid_user() {
+	case "$1" in
+		root|group2|fred|innocent|armand|lamick|brenn|aline) return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+home_for() {
+	case "$1" in
+		root) echo /root ;;
+		group2) echo /home/group2 ;;
+		fred) echo /home/fred-tuyishime ;;
+		innocent) echo /home/tuyishimire-innocent ;;
+		armand) echo /home/armand-ikirezi ;;
+		lamick) echo /home/ineza-shami-lamick ;;
+		brenn) echo /home/gabiro-vladmir-brenn ;;
+		aline) echo /home/irakoze-aline ;;
+		*) echo /home/group2 ;;
+	esac
+}
+
+clear
+if [ -f "$LOGIN_ART" ]; then
+	cat "$LOGIN_ART"
+else
+	printf '\n  Welcome to GROUP 2 OS\n  Linux\n\n'
+fi
+
+printf '\n  Accounts: group2  fred  innocent  armand  lamick  brenn  aline\n'
+printf '  Password: group2\n\n'
+printf '  Username: '
+read -r USERNAME
+printf '  Password: '
+# Hide input when a real terminal is available
+stty -echo 2>/dev/null
+read -r PASSWORD
+stty echo 2>/dev/null
+printf '\n'
+
+if ! valid_user "$USERNAME"; then
+	printf '\n  Sign in failed: unknown user.\n'
+	sleep 2
+	exit 1
+fi
+
+if [ "$PASSWORD" != "$PASS_OK" ]; then
+	printf '\n  Sign in failed: wrong password.\n'
+	sleep 2
+	exit 1
+fi
+
+export USER="$USERNAME"
+export LOGNAME="$USERNAME"
+export HOME="$(home_for "$USERNAME")"
+export G2_USER="$USERNAME"
+mkdir -p "$HOME"
+cd "$HOME" || cd /root
+printf '\n  Welcome, %s. Starting GROUP 2 OS...\n' "$USERNAME"
+sleep 1
+exit 0

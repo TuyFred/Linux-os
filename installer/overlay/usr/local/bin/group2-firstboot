@@ -1,0 +1,82 @@
+#!/bin/sh
+# After Install: keep Group 2 OS bootloader, login, and Terminal ready.
+# Runs once on the first boot from the hard disk.
+set -u
+
+marker=/var/lib/group2-os/firstboot-done
+mkdir -p /var/lib/group2-os
+if [ -f "$marker" ]; then
+	exit 0
+fi
+
+# Login screen after restart / logout / switch user.
+mkdir -p /etc/gdm3
+cat > /etc/gdm3/custom.conf <<'EOF'
+[daemon]
+# Sign Out and Restart must always show Group 2 OS login.
+AutomaticLoginEnable=false
+TimedLoginEnable=false
+WaylandEnable=true
+EOF
+# Keep default time zone if still unset (login clock).
+if [ ! -s /etc/timezone ]; then
+	echo 'Africa/Kigali' > /etc/timezone
+fi
+if [ -f /usr/share/zoneinfo/Africa/Kigali ] && [ ! -e /etc/localtime ]; then
+	ln -sfn /usr/share/zoneinfo/Africa/Kigali /etc/localtime
+fi
+
+# New users created in Settings get bash + member desktop folders from skel.
+if [ -f /etc/adduser.conf ]; then
+	if grep -q '^#*DSHELL=' /etc/adduser.conf 2>/dev/null; then
+		sed -i 's|^#*DSHELL=.*|DSHELL=/bin/bash|' /etc/adduser.conf
+	else
+		printf '\nDSHELL=/bin/bash\n' >> /etc/adduser.conf
+	fi
+fi
+sed -i 's|^#*SHELL=.*|SHELL=/bin/bash|' /etc/default/useradd 2>/dev/null || true
+grep -qx '/bin/bash' /etc/shells 2>/dev/null || echo '/bin/bash' >> /etc/shells
+
+# Plymouth + GRUB stay Group 2 OS after update-grub.
+if [ -f /usr/share/plymouth/themes/group2-os/group2-os.plymouth ]; then
+	mkdir -p /etc/alternatives
+	ln -sfn /usr/share/plymouth/themes/group2-os/group2-os.plymouth \
+		/etc/alternatives/default.plymouth
+	if command -v update-alternatives >/dev/null 2>&1; then
+		update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth \
+			/usr/share/plymouth/themes/group2-os/group2-os.plymouth 100 >/dev/null 2>&1 || true
+		update-alternatives --set default.plymouth \
+			/usr/share/plymouth/themes/group2-os/group2-os.plymouth >/dev/null 2>&1 || true
+	fi
+fi
+
+if [ -f /etc/default/grub ]; then
+	sed -i 's|^GRUB_DISTRIBUTOR=.*|GRUB_DISTRIBUTOR="Group 2 OS"|' /etc/default/grub
+	grep -q '^GRUB_THEME=' /etc/default/grub || \
+		echo 'GRUB_THEME="/usr/share/grub/themes/group2-os/theme.txt"' >> /etc/default/grub
+	sed -i 's|^#*GRUB_THEME=.*|GRUB_THEME="/usr/share/grub/themes/group2-os/theme.txt"|' /etc/default/grub
+	grep -q '^GRUB_BACKGROUND=' /etc/default/grub || \
+		echo 'GRUB_BACKGROUND="/usr/share/grub/themes/group2-os/background.png"' >> /etc/default/grub
+	sed -i 's|^#*GRUB_BACKGROUND=.*|GRUB_BACKGROUND="/usr/share/grub/themes/group2-os/background.png"|' /etc/default/grub
+fi
+
+# Font for the branded menu on installed disks.
+if [ -f /usr/share/grub/unicode.pf2 ] && [ -d /usr/share/grub/themes/group2-os ]; then
+	cp -f /usr/share/grub/unicode.pf2 /usr/share/grub/themes/group2-os/unicode.pf2 2>/dev/null || true
+fi
+
+if command -v update-grub >/dev/null 2>&1; then
+	update-grub >/dev/null 2>&1 || true
+elif command -v grub-mkconfig >/dev/null 2>&1; then
+	grub-mkconfig -o /boot/grub/grub.cfg >/dev/null 2>&1 || true
+fi
+
+if [ -x /usr/local/bin/group2-prepare-login ]; then
+	/usr/local/bin/group2-prepare-login >/dev/null 2>&1 || true
+fi
+if [ -x /usr/local/bin/group2-fix-live-user ]; then
+	/usr/local/bin/group2-fix-live-user >/dev/null 2>&1 || true
+fi
+
+date -u +%Y-%m-%dT%H:%M:%SZ > "$marker"
+exit 0

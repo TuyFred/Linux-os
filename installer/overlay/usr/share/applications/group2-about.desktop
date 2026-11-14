@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=About Group 2 OS
+Comment=System information for Group 2 OS
+Exec=/usr/local/bin/group2-about
+Icon=group2-os
+Terminal=false
+Type=Application
+Categories=System;Settings;
+StartupNotify=true

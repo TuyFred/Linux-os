@@ -1,0 +1,46 @@
+[Plymouth Theme]
+Name=Group 2 OS
+Description=Group 2 OS real boot progress
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/group2-os
+ScriptFile=/usr/share/plymouth/themes/group2-os/group2-os.script
+
+[two-step]
+ImageDir=/usr/share/plymouth/themes/spinner
+Font=Cantarell 12
+TitleFont=Cantarell Light 30
+DialogHorizontalAlignment=.5
+DialogVerticalAlignment=.5
+TitleHorizontalAlignment=.5
+TitleVerticalAlignment=.42
+HorizontalAlignment=.5
+VerticalAlignment=.72
+WatermarkHorizontalAlignment=.5
+WatermarkVerticalAlignment=.88
+BackgroundStartColor=0x050814
+BackgroundEndColor=0x050814
+ProgressBarBackgroundColor=0x123048
+ProgressBarForegroundColor=0x1ea7ff
+DialogClearsFirmwareBackground=true
+MessageBelowAnimation=true
+
+[boot-up]
+UseEndAnimation=false
+UseFirmwareBackground=false
+UseProgressBar=true
+Title=Group 2 OS
+SubTitle=LEARN  BUILD  CREATE  TOGETHER
+
+[shutdown]
+UseEndAnimation=false
+UseFirmwareBackground=false
+UseProgressBar=true
+Title=Group 2 OS
+
+[reboot]
+UseEndAnimation=false
+UseFirmwareBackground=false
+UseProgressBar=true
+Title=Group 2 OS

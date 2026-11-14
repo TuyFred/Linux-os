@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Terminal
+Comment=Group 2 OS Terminal
+Keywords=shell;prompt;command;commandline;cmd;
+TryExec=/usr/local/bin/group2-terminal
+Exec=/usr/local/bin/group2-terminal
+Icon=org.gnome.Terminal
+Type=Application
+Categories=System;TerminalEmulator;
+StartupNotify=true
+DBusActivatable=false
+X-GNOME-UsesNotifications=true

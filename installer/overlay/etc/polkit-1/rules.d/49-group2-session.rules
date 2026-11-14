@@ -1,0 +1,18 @@
+// Power, restart, and sign-out for the person sitting at this computer.
+polkit.addRule(function(action, subject) {
+    if (!subject || !subject.local || !subject.active || !action || !action.id) {
+        return undefined;
+    }
+    var id = String(action.id);
+    if (id.indexOf("org.freedesktop.login1.power-off") === 0 ||
+        id.indexOf("org.freedesktop.login1.reboot") === 0 ||
+        id.indexOf("org.freedesktop.login1.halt") === 0 ||
+        id.indexOf("org.freedesktop.login1.suspend") === 0 ||
+        id.indexOf("org.freedesktop.login1.hibernate") === 0 ||
+        id.indexOf("org.freedesktop.login1.inhibit") === 0 ||
+        id.indexOf("org.gnome.SessionManager") === 0 ||
+        id.indexOf("org.gnome.display-manager") === 0) {
+        return polkit.Result.YES;
+    }
+    return undefined;
+});

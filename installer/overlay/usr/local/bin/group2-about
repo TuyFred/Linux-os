@@ -1,0 +1,67 @@
+#!/bin/sh
+# About Group 2 OS — bilingual
+set -u
+if [ -f /usr/local/lib/group2/common.sh ]; then
+	. /usr/local/lib/group2/common.sh
+elif [ -f /usr/share/group2-os/i18n/load.sh ]; then
+	. /usr/share/group2-os/i18n/load.sh
+fi
+kernel=$(uname -r 2>/dev/null || echo unknown)
+arch=$(uname -m 2>/dev/null || echo unknown)
+cpu=$(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2 | sed 's/^ *//')
+[ -n "$cpu" ] || cpu=unknown
+mem=$(awk '/MemTotal/ {printf "%.1f GiB", $2/1024/1024}' /proc/meminfo 2>/dev/null)
+[ -n "$mem" ] || mem=unknown
+disk=$(df -h / 2>/dev/null | awk 'NR==2 {print $2 " total, " $4 " free"}')
+[ -n "$disk" ] || disk=unknown
+product=$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)
+vendor=$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || true)
+device="${vendor} ${product}"
+device=$(printf '%s' "$device" | sed 's/^ *//;s/ *$//')
+[ -n "$device" ] || device=this computer
+
+if [ "${GROUP2_LANG:-en}" = rw ]; then
+	text="GROUP 2 OS
+Verisiyo 1.0
+
+Sisitemu: Group 2 OS
+Ishingiye kuri: Linux
+Kernel: $kernel
+Architecture: $arch
+Device: $device
+Proseseri: $cpu
+Memori: $mem
+Ububiko: $disk
+
+Abanyamuryango: Fred Tuyishime · Tuyishimire Innocent · Armand Ikirezi
+Ineza shami Lamick · Gabiro Vladmir Brenn · Irakoze Aline
+Niyonkuru Tajidini
+
+LEARN • BUILD • CREATE • TOGETHER"
+	title="Ibyerekeye Group 2 OS"
+else
+	text="GROUP 2 OS
+Version 1.0
+
+Operating system: Group 2 OS
+Based on: Linux
+Kernel: $kernel
+Architecture: $arch
+Device: $device
+Processor: $cpu
+Memory: $mem
+Storage: $disk
+
+Members: Fred Tuyishime · Tuyishimire Innocent · Armand Ikirezi
+Ineza shami Lamick · Gabiro Vladmir Brenn · Irakoze Aline
+Niyonkuru Tajidini
+
+LEARN • BUILD • CREATE • TOGETHER"
+	title="About Group 2 OS"
+fi
+
+if command -v zenity >/dev/null 2>&1; then
+	zenity --info --title="$title" --width=480 --text="$text" 2>/dev/null || printf '%s\n' "$text"
+else
+	printf '%s\n' "$text"
+fi

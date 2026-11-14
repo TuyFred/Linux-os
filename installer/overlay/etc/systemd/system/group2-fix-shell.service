@@ -1,0 +1,14 @@
+[Unit]
+Description=Re-fix Group 2 OS Terminal shell after graphical login
+After=display-manager.service
+Wants=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sleep 4
+ExecStart=-/usr/local/bin/group2-fix-live-user
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=graphical.target

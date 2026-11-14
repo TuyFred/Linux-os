@@ -1,0 +1,4 @@
+GROUP 2 OS shared account
+Login: group2
+Password: group2
+Slogan: LEARN • BUILD • CREATE • TOGETHER

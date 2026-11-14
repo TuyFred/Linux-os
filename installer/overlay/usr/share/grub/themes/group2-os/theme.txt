@@ -1,0 +1,35 @@
+# Group 2 OS boot menu
+desktop-image: "background.png"
+desktop-color: "#050814"
+title-text: ""
+terminal-font: "GNU Unifont Regular 16"
+terminal-left: "10%"
+terminal-top: "62%"
+terminal-width: "80%"
+terminal-height: "28%"
+terminal-border: "0"
+
++ boot_menu {
+  left = 12%
+  top = 58%
+  width = 76%
+  height = 32%
+  item_font = "GNU Unifont Regular 16"
+  item_color = "#e8f4ff"
+  selected_item_color = "#041018"
+  item_height = 42
+  item_padding = 12
+  item_spacing = 10
+  item_icon_space = 0
+  selected_item_pixmap_style = "select_*.png"
+}
+
++ label {
+  left = 0
+  top = 94%
+  width = 100%
+  align = "center"
+  color = "#8ec8ff"
+  font = "GNU Unifont Regular 16"
+  text = "Group 2 OS"
+}

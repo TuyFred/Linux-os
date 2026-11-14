@@ -1,0 +1,66 @@
+#!/bin/sh
+# Group 2 OS — Security & Privacy Center
+set -u
+. /usr/local/lib/group2/common.sh
+
+fw="$SEC_DISABLED"
+if command -v ufw >/dev/null 2>&1; then
+	ufw status 2>/dev/null | head -1 | grep -qi active && fw="$SEC_ENABLED"
+fi
+
+upd="—"
+if command -v apt-get >/dev/null 2>&1; then
+	n=$(apt-get -s upgrade 2>/dev/null | grep -c '^Inst ' || true)
+	upd="$n"
+fi
+
+users=$(getent passwd | awk -F: '$3>=1000 && $3<65534 {print $1}' | tr '\n' ', ' | sed 's/,$//')
+
+tips_en="• Use a strong password after Install
+• Enable firewall: sudo ufw enable
+• Keep updates current: sudo apt update && sudo apt upgrade
+• Review startup apps in Optimizer
+• Cover camera when not needed; mute mic in apps
+• Do not run unknown .sh as root"
+
+tips_rw="• Koresha ijambo ry'ibanga rikomeye nyuma yo kwimura
+• Fungura firewall: sudo ufw enable
+• Amavugurura: sudo apt update && sudo apt upgrade
+• Reba porogaramu zitangira muri Optimizer
+• Funga kamera / mikoro iyo udakoresha
+• Ntukore .sh zida zi as root"
+
+tips=$tips_en
+[ "$GROUP2_LANG" = rw ] && tips=$tips_rw
+
+body="$SEC_FW: $fw
+$SEC_UPDATES: $upd
+$SEC_USERS: $users
+
+$SEC_CAM:
+Settings → Privacy (camera / microphone permissions)
+
+$SEC_TIPS:
+$tips"
+
+choice=$(g2_zenity --list --title="$SEC_TITLE" --width=560 --height=420 \
+	--text="$body" \
+	--column="ID" --column="Action" \
+	"updates" "$SEC_CHECK" \
+	"privacy" "Privacy settings" \
+	"close" "$BTN_CLOSE" 2>/dev/null) || exit 0
+case "$choice" in
+	updates)
+		if command -v update-manager >/dev/null 2>&1; then
+			update-manager >/dev/null 2>&1 &
+		elif command -v gnome-software >/dev/null 2>&1; then
+			gnome-software --mode=updates >/dev/null 2>&1 &
+		else
+			g2_info "$SEC_UPDATES" "sudo apt update && sudo apt upgrade"
+		fi
+		;;
+	privacy)
+		gnome-control-center privacy >/dev/null 2>&1 &
+		;;
+esac
+exit 0

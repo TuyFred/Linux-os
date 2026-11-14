@@ -1,0 +1,18 @@
+# Extra offline Q&A (Kinyarwanda): keywords|Answer
+update,apt,upgrade,package|Nyuma yo kwimura, fungura Terminal: sudo apt update && sudo apt upgrade. Ku Live USB, banza wimure kuri disiki.
+firefox,browser,web|Firefox iri ku dock. Kanda ikoni ya Firefox urebe interineti.
+files,folder,nautilus,documents|Fungura Files ku dock. Ububiko bw'abanyamuryango buri ku Desktop.
+create user,add user,new user,umukoresha|Settings → Users → Add User. Iyo konti igaragara muri Switch User no ku login.
+virtualbox,vm,safe graphics|Muri VirtualBox koresha VBoxSVGA, 3D Off, Optical mbere. Niba hashushe: Group 2 OS (VirtualBox / safe graphics).
+usb,rufus,boot stick|Andika GROUP2-OS.iso na Rufus (GPT/UEFI). Tangiza laptop kuri USB (F12/Esc), hanyuma Try cyangwa Install.
+install steps,how to install,install os,kwimura|1) Tangiza ISO 2) Try or Install 3) Fungura Install Group 2 OS 4) Ururimi, disiki, konti 5) Restart 6) Kuramo media 7) Login na konti yawe. Ijambo group2 ni rya Try gusa.
+erase disk,wipe,alongside|Mu kwimura ushobora gusiba disiki cyangwa kwimura hamwe n'indi sisitemu. Banza ubike amadosiye y'ingenzi.
+after install,first boot|Nyuma yo kwimura, ubona bootloader ya Group 2 OS hanyuma login. Koresha konti wakoze — si group2 ya live.
+slogan,learn,build,create|Inyuguti zacu: LEARN • BUILD • CREATE • TOGETHER.
+hostname,group2-os|Izina rya mudasobwa ni group2-os. Muri Terminal ureba user@group2-os.
+sudo,admin|Ku live USB, group2 ikoresha sudo. Nyuma yo kwimura, konti yawe ni administrator.
+bluetooth|Settings → Bluetooth. Fungura Bluetooth uhuzanye na mudasobwa.
+sound,audio,volume|Ikoni y'ijwi hejuru iburyo, cyangwa Settings → Sound.
+display,resolution,screen|Settings → Displays. Muri VirtualBox, safe graphics ikoresha nomodeset niba hashushe.
+shutdown,power off|Menu → Power → Power Off. Restart niba ushaka login nyuma yo kongera gutangira.
+assistant,ai,online|Offline: ubufasha bwa Group 2 OS. Online: ibisubizo ku kibazo icyo ari cyo cyose. Optional: shyira OpenAI/Groq key muri ~/.config/group2-os/online-api-key.

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Group 2 OS Desktop
+Comment=Apply real Group 2 OS folders, icons, dock, and wallpaper
+Exec=/usr/local/bin/group2-desktop-setup
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=2
+NoDisplay=true

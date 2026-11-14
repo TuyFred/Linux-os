@@ -1,0 +1,32 @@
+GROUP 2 OS
+Linux
+LEARN • BUILD • CREATE • TOGETHER
+
+Recommended: installable laptop ISO
+-----------------------------------
+  bash scripts/build.sh laptop
+
+  Output:  build/out/GROUP2-OS.iso
+  Guide:   INSTALL-ON-LAPTOP.txt
+
+  This ISO can be written to a USB stick with Rufus and installed
+  on another laptop. It includes a graphical installer, Firefox,
+  file manager, GROUP 2 wallpaper, member folders, and laptop drivers.
+
+
+From-source ISO (kernel in linux-master)
+----------------------------------------
+  bash scripts/build.sh minimal
+
+  This compiles YOUR kernel and BusyBox. Use it for learning and
+  QEMU. It is not the best choice for a random laptop.
+
+
+Windows
+-------
+  1. Administrator PowerShell:  wsl --install -d Ubuntu
+  2. Restart
+  3. Ubuntu terminal:
+
+       cd "/mnt/c/Users/USER/GROUP 2 OS"
+       bash scripts/build.sh laptop

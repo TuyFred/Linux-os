@@ -1,0 +1,151 @@
+#!/bin/sh
+# Create Group 2 OS accounts and choose Administrator or Standard user.
+set -u
+. /usr/local/lib/group2/common.sh
+
+HELPER=/usr/local/sbin/group2-account-helper
+TITLE="${APP_ACCOUNTS:-Group 2 Accounts}"
+
+if [ "${1:-}" = "--selftest" ]; then
+	"$HELPER" --selftest
+	echo "SELFTEST accounts PASS"
+	exit 0
+fi
+
+is_admin() {
+	[ "$(id -u)" -eq 0 ] && return 0
+	id -nG 2>/dev/null | tr ' ' '\n' | grep -qx sudo && return 0
+	id -nG 2>/dev/null | tr ' ' '\n' | grep -qx adm && return 0
+	return 1
+}
+
+run_root() {
+	if [ "$(id -u)" -eq 0 ]; then
+		"$@"
+		return $?
+	fi
+	sudo -n "$HELPER" "$@"
+}
+
+list_users() {
+	if [ -x "$HELPER" ]; then
+		"$HELPER" list 2>/dev/null || true
+		return
+	fi
+	return 0
+}
+
+role_label() {
+	case "$1" in
+		admin) printf '%s' "Administrator" ;;
+		*) printf '%s' "Standard user" ;;
+	esac
+}
+
+show_users() {
+	text="Accounts on this computer:\n\n"
+	found=0
+	while IFS='|' read -r user label role; do
+		[ -n "$user" ] || continue
+		found=1
+		text="$text• $label ($user) — $(role_label "$role")\n"
+	done <<EOF
+$(list_users)
+EOF
+	[ "$found" -eq 1 ] || text="${text}No extra accounts yet. The account you created during Install is the Administrator.\n"
+	printf '%s' "$text"
+}
+
+create_account() {
+	sep=$(printf '\t')
+	form=$(g2_zenity --forms --title="$TITLE" --width=480 --separator="$sep" \
+		--text="Create a real login.\n\nAdministrator: can install software, change settings, and create accounts.\nStandard user: can use the desktop, but cannot administer the system.\n\nCreate accounts after Install so they stay on the laptop." \
+		--add-entry="Full name" \
+		--add-entry="Username (lowercase)" \
+		--add-password="Password" \
+		--add-password="Confirm password" \
+		--add-combo="Privilege" \
+		--combo-values="Administrator|Standard user" \
+		2>/dev/null) || return 0
+	fullname=$(printf '%s' "$form" | awk -F '\t' '{print $1}')
+	username=$(printf '%s' "$form" | awk -F '\t' '{print $2}' | tr '[:upper:]' '[:lower:]' | tr -d ' ')
+	pass=$(printf '%s' "$form" | awk -F '\t' '{print $3}')
+	confirm=$(printf '%s' "$form" | awk -F '\t' '{print $4}')
+	priv=$(printf '%s' "$form" | awk -F '\t' '{print $5}')
+	case "$priv" in
+		Administrator) role=admin ;;
+		*) role=standard ;;
+	esac
+	if [ "$pass" != "$confirm" ]; then
+		g2_info "$TITLE" "The passwords do not match. The account was not created."
+		return 0
+	fi
+	if [ "${#pass}" -lt 4 ]; then
+		g2_info "$TITLE" "Use a password of at least 4 characters. The account was not created."
+		return 0
+	fi
+	g2_zenity --question --title="$TITLE" --width=420 \
+		--text="Create $username as $(role_label "$role")?" \
+		2>/dev/null || return 0
+	tmp=$(mktemp /tmp/g2-account.XXXXXX)
+	chmod 600 "$tmp"
+	printf '%s\n' "$pass" > "$tmp"
+	err=$(run_root create "$fullname" "$username" "$role" < "$tmp" 2>&1)
+	status=$?
+	rm -f "$tmp"
+	if [ "$status" -ne 0 ]; then
+		g2_info "$TITLE" "Could not create the account.\n\n${err:-Administrator permission is required.}"
+		return 0
+	fi
+	g2_info "$TITLE" "Account created.\n\n$fullname ($username)\nPrivilege: $(role_label "$role")\n\nSign Out or Switch User. The new account appears on the Group 2 OS login screen."
+}
+
+change_role() {
+	users=$(list_users)
+	[ -n "$users" ] || {
+		g2_info "$TITLE" "There is no account to change yet."
+		return 0
+	}
+	col=$(printf '%s\n' "$users" | awk -F'|' '{ printf "%s\n%s (%s)\n", $1, $2, ($3=="admin"?"Administrator":"Standard user") }')
+	pick=$(printf '%s\n' "$col" | g2_zenity --list --title="$TITLE" --width=460 --height=320 \
+		--text="Choose the account whose privilege you want to change." \
+		--column="Username" --column="Current privilege" \
+		2>/dev/null) || return 0
+	[ -n "$pick" ] || return 0
+	priv=$(g2_zenity --list --title="$TITLE" --width=420 --height=240 \
+		--text="Set privilege for $pick" \
+		--column="ID" --column="Privilege" \
+		admin "Administrator — full system rights" \
+		standard "Standard user — desktop only" \
+		2>/dev/null) || return 0
+	g2_zenity --question --title="$TITLE" --width=420 \
+		--text="Change $pick to $(role_label "$priv")?" \
+		2>/dev/null || return 0
+	err=$(run_root role "$pick" "$priv" 2>&1)
+	status=$?
+	if [ "$status" -ne 0 ]; then
+		g2_info "$TITLE" "Could not change privilege.\n\n${err:-Keep at least one administrator.}"
+		return 0
+	fi
+	g2_info "$TITLE" "$pick is now $(role_label "$priv").\n\nThe change applies the next time that person signs in."
+}
+
+if ! is_admin; then
+	g2_info "$TITLE" "Only an administrator can create accounts or change privileges.\n\nSign in with the administrator created during Install, then open Group 2 Accounts again.\n\nA standard user can use the desktop, but cannot create accounts."
+	exit 0
+fi
+
+while true; do
+	choice=$(g2_zenity --list --title="$TITLE" --width=520 --height=420 \
+		--text="$(show_users)\nThe Install account is an Administrator. New accounts can be Administrator or Standard user." \
+		--column="ID" --column="Action" \
+		create "Create account" \
+		role "Change Administrator / Standard" \
+		close "Close" \
+		2>/dev/null) || exit 0
+	case "$choice" in
+		create) create_account ;;
+		role) change_role ;;
+		*) exit 0 ;;
+	esac
+done

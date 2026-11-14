@@ -1,0 +1,164 @@
+#!/bin/sh
+# Root helper: create a real login and set Administrator or Standard privilege.
+# Does not run unless started as root. Passwords are read from stdin, not argv.
+set -eu
+
+ADMIN_GROUPS="sudo adm"
+
+die() {
+	printf '%s\n' "$*" >&2
+	exit 1
+}
+
+valid_user() {
+	printf '%s' "$1" | grep -Eq '^[a-z_][a-z0-9_-]{1,31}$'
+}
+
+is_admin_user() {
+	name=$1
+	id "$name" >/dev/null 2>&1 || return 1
+	groups=$(id -nG "$name" 2>/dev/null || true)
+	printf '%s' " $groups " | grep -q ' sudo '
+}
+
+human_users() {
+	awk -F: '$3 >= 1000 && $3 < 65534 { print $1 }' /etc/passwd
+}
+
+admin_count() {
+	n=0
+	for name in $(human_users); do
+		if is_admin_user "$name"; then
+			n=$((n + 1))
+		fi
+	done
+	printf '%s' "$n"
+}
+
+write_account_service() {
+	name=$1
+	label=$2
+	mkdir -p /var/lib/AccountsService/users
+	cat > "/var/lib/AccountsService/users/$name" <<EOF
+[User]
+SystemAccount=false
+AutomaticLogin=false
+Name=$label
+EOF
+	chmod 644 "/var/lib/AccountsService/users/$name"
+}
+
+apply_role() {
+	name=$1
+	role=$2
+	case "$role" in
+		admin)
+			for g in $ADMIN_GROUPS; do
+				getent group "$g" >/dev/null 2>&1 || continue
+				usermod -aG "$g" "$name"
+			done
+			;;
+		standard)
+			if is_admin_user "$name"; then
+				others=$(($(admin_count) - 1))
+				[ "$others" -ge 1 ] || die "Keep at least one administrator. Create another administrator before changing this account to Standard."
+			fi
+			for g in $ADMIN_GROUPS; do
+				gpasswd -d "$name" "$g" >/dev/null 2>&1 || true
+			done
+			;;
+		*) die "Role must be admin or standard." ;;
+	esac
+}
+
+cmd_list() {
+	for name in $(human_users); do
+		label=$(getent passwd "$name" | cut -d: -f5 | cut -d, -f1)
+		[ -n "$label" ] || label=$name
+		if is_admin_user "$name"; then
+			role=admin
+		else
+			role=standard
+		fi
+		printf '%s|%s|%s\n' "$name" "$label" "$role"
+	done
+}
+
+cmd_create() {
+	fullname=$1
+	username=$2
+	role=$3
+	valid_user "$username" || die "Username must be 2-32 characters: lowercase letters, numbers, _ or -, and must start with a letter."
+	id "$username" >/dev/null 2>&1 && die "That username already exists."
+	case "$username" in
+		root|daemon|bin|sys|sync|games|man|lp|mail|news|uucp|proxy|www-data|backup|list|irc|gnats|nobody|systemd-network|systemd-resolve) die "That username is reserved." ;;
+	esac
+	case "$role" in
+		admin|standard) ;;
+		*) die "Choose Administrator or Standard user." ;;
+	esac
+	# Reject control characters in the display name.
+	printf '%s' "$fullname" | grep -q '[[:cntrl:]]' && die "Name cannot contain line breaks."
+	[ -n "$fullname" ] || fullname=$username
+	IFS= read -r password || password=
+	[ "${#password}" -ge 4 ] || die "Password must be at least 4 characters."
+	printf '%s' "$password" | grep -q '[[:cntrl:]]' && die "Password cannot contain line breaks."
+
+	if command -v adduser >/dev/null 2>&1; then
+		adduser --disabled-password --gecos "$fullname" --shell /bin/bash "$username" >/dev/null
+	else
+		useradd -m -s /bin/bash -c "$fullname" "$username"
+	fi
+	printf '%s:%s\n' "$username" "$password" | chpasswd
+	passwd -u "$username" >/dev/null 2>&1 || true
+	apply_role "$username" "$role"
+	write_account_service "$username" "$fullname"
+	if [ -x /usr/local/bin/group2-prepare-login ]; then
+		/usr/local/bin/group2-prepare-login >/dev/null 2>&1 || true
+	fi
+	printf 'created|%s|%s\n' "$username" "$role"
+}
+
+cmd_role() {
+	username=$1
+	role=$2
+	id "$username" >/dev/null 2>&1 || die "That account does not exist."
+	uid=$(id -u "$username")
+	[ "$uid" -ge 1000 ] || die "System accounts cannot be changed here."
+	apply_role "$username" "$role"
+	label=$(getent passwd "$username" | cut -d: -f5 | cut -d, -f1)
+	[ -n "$label" ] || label=$username
+	write_account_service "$username" "$label"
+	printf 'role|%s|%s\n' "$username" "$role"
+}
+
+selftest() {
+	valid_user "student1" || exit 1
+	valid_user "A" && exit 1
+	valid_user "bad name" && exit 1
+	valid_user "x" && exit 1
+	printf '%s' "ok name" | grep -q '[[:cntrl:]]' && exit 1
+	echo "SELFTEST account helper PASS"
+	exit 0
+}
+
+[ "${1:-}" = "--selftest" ] && selftest
+
+case "${1:-}" in
+	list) cmd_list; exit 0 ;;
+esac
+
+[ "$(id -u)" -eq 0 ] || die "Account changes must be run by an administrator."
+
+case "${1:-}" in
+	list) cmd_list ;;
+	create)
+		[ $# -eq 4 ] || die "Usage: create FULLNAME USERNAME admin|standard  < password on stdin"
+		cmd_create "$2" "$3" "$4"
+		;;
+	role)
+		[ $# -eq 3 ] || die "Usage: role USERNAME admin|standard"
+		cmd_role "$2" "$3"
+		;;
+	*) die "Usage: group2-account-helper list|create|role" ;;
+esac

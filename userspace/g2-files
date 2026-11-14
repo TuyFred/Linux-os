@@ -1,0 +1,67 @@
+#!/bin/sh
+# GROUP 2 OS file manager (console)
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+HERE="${HOME:-/root}"
+[ -d "$HERE/Desktop" ] && HERE="$HERE/Desktop"
+cd "$HERE" || cd /root
+
+while true; do
+	clear
+	printf '\n'
+	printf '  ════════════════════════════════════════════════════════════════\n'
+	printf '   GROUP 2 OS File Manager\n'
+	printf '  ════════════════════════════════════════════════════════════════\n'
+	printf '   Location: %s\n' "$(pwd)"
+	printf '  ────────────────────────────────────────────────────────────────\n'
+	printf '   Places                          Folders\n'
+	printf '     Home         /root              Fred Tuyishime\n'
+	printf '     Desktop      ~/Desktop          Tuyishimire Innocent\n'
+	printf '     Documents    ~/Desktop/Documents  Armand Ikirezi\n'
+	printf '     Downloads    /tmp/downloads     Ineza shami Lamick\n'
+	printf '     Music        ~/Desktop/Music    Gabiro Vladmir Brenn\n'
+	printf '     Pictures     ~/Desktop/Pictures Irakoze Aline\n'
+	printf '                                    Niyonkuru Tajidini\n'
+	printf '     Videos       ~/Desktop/Videos   Projects\n'
+	printf '     Trash        ~/Desktop/Trash    Documents  Pictures\n'
+	printf '     Network      (not mounted)      Music  Videos  Trash\n'
+	printf '  ────────────────────────────────────────────────────────────────\n'
+	ls -1
+	printf '  ────────────────────────────────────────────────────────────────\n'
+	printf '   GROUP 2  ·  7 Members  ·  Linux — Group 2\n'
+	printf '   Build. Learn. Create. Together.\n'
+	printf '  ────────────────────────────────────────────────────────────────\n'
+	printf '   Commands:  ls | cd DIR | cat FILE | home | desktop | members | q\n'
+	printf '   > '
+	read -r CMD ARG REST
+	case "$CMD" in
+		q|quit|exit) exit 0 ;;
+		""|ls) ;;
+		home) cd /root 2>/dev/null || cd "$HOME" ;;
+		desktop) cd "${HOME:-/root}/Desktop" 2>/dev/null || cd /root/Desktop ;;
+		members) cd /root/Desktop 2>/dev/null ;;
+		documents) cd "${HOME:-/root}/Desktop/Documents" 2>/dev/null ;;
+		pictures) cd "${HOME:-/root}/Desktop/Pictures" 2>/dev/null ;;
+		music) cd "${HOME:-/root}/Desktop/Music" 2>/dev/null ;;
+		videos) cd "${HOME:-/root}/Desktop/Videos" 2>/dev/null ;;
+		trash) cd "${HOME:-/root}/Desktop/Trash" 2>/dev/null ;;
+		cd)
+			if [ -n "$ARG" ]; then
+				cd "$ARG" 2>/dev/null || printf '   Cannot open: %s\n' "$ARG"
+				[ -n "$ARG" ] && sleep 1
+			fi
+			;;
+		cat)
+			if [ -f "$ARG" ]; then
+				printf '\n'
+				cat "$ARG"
+				printf '\n  Press Enter... '
+				read -r _
+			fi
+			;;
+		*)
+			printf '   Unknown command.\n'
+			sleep 1
+			;;
+	esac
+done

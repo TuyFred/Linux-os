@@ -1,0 +1,177 @@
+#!/bin/sh
+# Logout, Restart, and Switch User must show the Group 2 OS login screen.
+# Also applies login branding, clock, and Africa/Kigali time zone defaults.
+set -u
+
+live_session() {
+	grep -q 'boot=casper' /proc/cmdline 2>/dev/null && return 0
+	[ -d /run/casper ] && return 0
+	[ -d /cdrom/casper ] && return 0
+	grep -q ' /cdrom ' /proc/mounts 2>/dev/null && return 0
+	return 1
+}
+
+ensure_timezone() {
+	# Default project time zone (Rwanda). Do not override if admin already set another.
+	if [ ! -f /etc/timezone ] || [ ! -s /etc/timezone ]; then
+		echo 'Africa/Kigali' > /etc/timezone
+	fi
+	tz=$(cat /etc/timezone 2>/dev/null | tr -d '\r\n' || true)
+	case "$tz" in
+		Africa/Kigali|Africa/Maputo|Africa/Nairobi|UTC|Etc/UTC) ;;
+		"")
+			echo 'Africa/Kigali' > /etc/timezone
+			tz=Africa/Kigali
+			;;
+	esac
+	if [ -f "/usr/share/zoneinfo/$tz" ]; then
+		ln -sfn "/usr/share/zoneinfo/$tz" /etc/localtime
+	elif [ -f /usr/share/zoneinfo/Africa/Kigali ]; then
+		echo 'Africa/Kigali' > /etc/timezone
+		ln -sfn /usr/share/zoneinfo/Africa/Kigali /etc/localtime
+	fi
+}
+
+disable_autologin() {
+	for f in /etc/gdm3/custom.conf /etc/gdm/custom.conf; do
+		[ -f "$f" ] || continue
+		sed -i '/^AutomaticLoginEnable=/d' "$f" 2>/dev/null || true
+		sed -i '/^AutomaticLogin=/d' "$f" 2>/dev/null || true
+		sed -i '/^TimedLoginEnable=/d' "$f" 2>/dev/null || true
+		sed -i '/^TimedLogin=/d' "$f" 2>/dev/null || true
+		sed -i '/^TimedLoginUser=/d' "$f" 2>/dev/null || true
+		if ! grep -q '^\[daemon\]' "$f" 2>/dev/null; then
+			printf '[daemon]\n' >> "$f"
+		fi
+		printf '%s\n' \
+			'AutomaticLoginEnable=false' \
+			'TimedLoginEnable=false' \
+			'WaylandEnable=true' >> "$f.tmp.group2" 2>/dev/null || true
+	done
+	# Rewrite clean custom.conf so casper cannot leave autologin on.
+	mkdir -p /etc/gdm3
+	cat > /etc/gdm3/custom.conf <<'EOF'
+[daemon]
+# Group 2 OS: Sign Out / Restart / Switch User always return to this login screen.
+AutomaticLoginEnable=false
+TimedLoginEnable=false
+WaylandEnable=true
+EOF
+	if [ -d /etc/gdm ]; then
+		cp -f /etc/gdm3/custom.conf /etc/gdm/custom.conf 2>/dev/null || true
+	fi
+
+	# Clear per-user AccountsService autologin flags.
+	for uf in /var/lib/AccountsService/users/*; do
+		[ -f "$uf" ] || continue
+		sed -i 's/^AutomaticLogin=.*/AutomaticLogin=false/' "$uf" 2>/dev/null || true
+		if ! grep -q '^AutomaticLogin=' "$uf" 2>/dev/null; then
+			printf '\n[User]\nAutomaticLogin=false\n' >> "$uf" 2>/dev/null || true
+		fi
+	done
+}
+
+show_account() {
+	name=$1
+	label=${2:-Group 2 OS}
+	id "$name" >/dev/null 2>&1 || return 0
+	cat > "/var/lib/AccountsService/users/$name" <<EOF
+[User]
+SystemAccount=false
+Session=
+XSession=
+AutomaticLogin=false
+Name=$label
+EOF
+	chmod 644 "/var/lib/AccountsService/users/$name" 2>/dev/null || true
+}
+
+mkdir -p /etc/gdm3 /etc/dconf/db/gdm.d /var/lib/AccountsService/users \
+	/usr/share/backgrounds /usr/share/pixmaps
+
+ensure_timezone
+disable_autologin
+
+# Live: show the try user; installed: list every normal login account for Switch User.
+if live_session; then
+	for name in ubuntu group2 group; do
+		show_account "$name" "Group 2 OS"
+	done
+	if getent passwd 1000 >/dev/null 2>&1; then
+		show_account "$(id -un 1000)" "Group 2 OS"
+	fi
+	banner='Welcome to GROUP 2 OS\nLinux  ·  LEARN • BUILD • CREATE • TOGETHER\nLive password: group2'
+else
+	while IFS=: read -r name _ uid _ _ _ _; do
+		case "$uid" in
+			''|*[!0-9]*) continue ;;
+		esac
+		[ "$uid" -ge 1000 ] || continue
+		[ "$uid" -lt 65534 ] || continue
+		show_account "$name" "$(getent passwd "$name" | cut -d: -f5 | cut -d, -f1)"
+	done < /etc/passwd
+	banner='Welcome to GROUP 2 OS\nLinux  ·  LEARN • BUILD • CREATE • TOGETHER'
+fi
+
+# Enable login clock extension + panel clock (live date/time for time zone).
+cat > /etc/dconf/db/gdm.d/00-group2 <<'EOF'
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/group2-os-login.png'
+picture-uri-dark='file:///usr/share/backgrounds/group2-os-login.png'
+picture-options='zoom'
+primary-color='#071422'
+secondary-color='#0a1a30'
+
+[org/gnome/desktop/screensaver]
+picture-uri='file:///usr/share/backgrounds/group2-os-login.png'
+picture-options='zoom'
+
+[org/gnome/desktop/interface]
+color-scheme='prefer-dark'
+accent-color='blue'
+gtk-theme='Yaru-blue-dark'
+icon-theme='Yaru-blue'
+clock-format='24h'
+clock-show-date=true
+clock-show-seconds=true
+clock-show-weekday=true
+
+[org/gnome/login-screen]
+banner-message-enable=true
+disable-user-list=false
+disable-restart-buttons=false
+logo='/usr/share/pixmaps/group2-os.png'
+
+[org/gnome/shell]
+enabled-extensions=['group2-login-clock@group2-os']
+disable-user-extensions=false
+EOF
+
+cat > /etc/dconf/db/gdm.d/10-group2-login.conf <<EOF
+[org/gnome/login-screen]
+banner-message-enable=true
+banner-message-text='$banner'
+disable-user-list=false
+disable-restart-buttons=false
+logo='/usr/share/pixmaps/group2-os.png'
+EOF
+
+# Session lockdown: never hide Log Out / Switch User.
+mkdir -p /etc/dconf/db/local.d
+cat > /etc/dconf/db/local.d/01-group2-session <<'EOF'
+[org/gnome/desktop/lockdown]
+disable-log-out=false
+disable-user-switching=false
+
+[org/gnome/desktop/interface]
+clock-format='24h'
+clock-show-date=true
+clock-show-seconds=true
+clock-show-weekday=true
+EOF
+
+if command -v dconf >/dev/null 2>&1; then
+	dconf compile /etc/dconf/db/gdm /etc/dconf/db/gdm.d >/dev/null 2>&1 || true
+	dconf compile /etc/dconf/db/local /etc/dconf/db/local.d >/dev/null 2>&1 || true
+fi
+exit 0

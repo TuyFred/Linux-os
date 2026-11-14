@@ -1,0 +1,11 @@
+root:x:0:
+group2:x:1000:group2,fred,innocent,armand,lamick,brenn,aline,tajidini
+fred:x:1001:
+innocent:x:1002:
+armand:x:1003:
+lamick:x:1004:
+brenn:x:1005:
+aline:x:1006:
+tajidini:x:1007:
+nogroup:x:65534:
+users:x:100:

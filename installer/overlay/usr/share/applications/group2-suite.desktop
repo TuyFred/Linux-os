@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Group 2 Tools
+Name[rw]=Ibikoresho bya Group 2
+Comment=Assistant, Health, Monitor, Optimizer, Security
+Comment[rw]=Umufasha, Ubuzima, Igenzura, Kunosha, Umutekano
+Exec=/usr/local/bin/group2-suite
+Icon=applications-system
+Terminal=false
+Type=Application
+Categories=System;Utility;
+StartupNotify=true

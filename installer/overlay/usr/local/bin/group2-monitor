@@ -1,0 +1,46 @@
+#!/bin/sh
+# Group 2 OS — Smart System Monitor
+set -u
+. /usr/local/lib/group2/common.sh
+
+cpu=$(top -bn1 2>/dev/null | awk -F'[, ]+' '/Cpu\(s\)|CPU:/ {for(i=1;i<=NF;i++) if($i ~ /id/){gsub("%","",$(i-1)); print 100-$(i-1); exit}}')
+[ -n "$cpu" ] || cpu=$(awk '/^cpu /{u=$2+$4; t=$2+$3+$4+$5; printf "%.0f", (u*100)/t}' /proc/stat)
+cpu=${cpu:-$MON_NA}
+
+ram=$(awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{if(t) printf "%.1f GiB used / %.1f GiB (%.0f%%)", (t-a)/1024/1024, t/1024/1024, (t-a)*100/t; else print "n/a"}' /proc/meminfo)
+disk=$(df -h / 2>/dev/null | awk 'NR==2{print $3 " used / " $2 " (" $5 ")"}')
+net=$MON_NA
+if command -v nmcli >/dev/null 2>&1; then
+	net=$(nmcli -t -f DEVICE,TYPE,STATE,CONNECTION d 2>/dev/null | awk -F: '$3=="connected"{print $1 " · " $4; exit}')
+	[ -n "$net" ] || net="disconnected"
+fi
+bat=$MON_NA
+for b in /sys/class/power_supply/BAT*; do
+	[ -f "$b/capacity" ] || continue
+	bat="$(cat "$b/capacity")% ($(cat "$b/status" 2>/dev/null))"
+	break
+done
+temp=$MON_NA
+if [ -f /sys/class/thermal/thermal_zone0/temp ]; then
+	t=$(cat /sys/class/thermal/thermal_zone0/temp)
+	temp=$((t / 1000))" °C"
+fi
+
+body="$MON_CPU: ${cpu}%
+$MON_RAM: $ram
+$MON_DISK: $disk
+$MON_BAT: $bat
+$MON_NET: $net
+$MON_TEMP: $temp"
+
+choice=$(g2_zenity --list --title="$MON_TITLE" --width=480 --height=360 \
+	--text="$body" \
+	--column="ID" --column="Action" \
+	"refresh" "$BTN_REFRESH" \
+	"health" "$APP_HEALTH" \
+	"close" "$BTN_CLOSE" 2>/dev/null) || exit 0
+case "$choice" in
+	refresh) exec /usr/local/bin/group2-monitor ;;
+	health) exec /usr/local/bin/group2-health ;;
+esac
+exit 0

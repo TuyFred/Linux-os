@@ -1,0 +1,155 @@
+#!/bin/sh
+# Real Group 2 OS desktop: folders, icons, dock, wallpaper.
+# Runs at graphical login (autostart), not as a fake screenshot.
+
+if [ -z "${HOME:-}" ] || [ ! -d "$HOME" ]; then
+	exit 0
+fi
+
+# Account repair runs as a boot service. Do not run it here; that printed
+# usermod and dbus errors on the console before the desktop was ready.
+if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+	exit 0
+fi
+
+# Live session and first login can race the desktop. Wait briefly for gio.
+i=0
+while [ "$i" -lt 20 ]; do
+	if command -v gio >/dev/null 2>&1 && [ -d "$HOME/Desktop" ]; then
+		break
+	fi
+	i=$((i + 1))
+	sleep 1
+done
+
+mkdir -p \
+	"$HOME/Desktop/Fred Tuyishime" \
+	"$HOME/Desktop/Tuyishimire Innocent" \
+	"$HOME/Desktop/Armand Ikirezi" \
+	"$HOME/Desktop/Ineza shami Lamick" \
+	"$HOME/Desktop/Gabiro Vladmir Brenn" \
+	"$HOME/Desktop/Irakoze Aline" \
+	"$HOME/Desktop/Niyonkuru Tajidini" \
+	"$HOME/Desktop/Projects" \
+	"$HOME/Desktop/Documents" \
+	"$HOME/Desktop/Pictures" \
+	"$HOME/Desktop/Music" \
+	"$HOME/Desktop/Videos" \
+	"$HOME/Desktop/Trash" \
+	"$HOME/Documents" \
+	"$HOME/Downloads" \
+	"$HOME/Music" \
+	"$HOME/Pictures" \
+	"$HOME/Videos" \
+	"$HOME/.config/gtk-3.0" \
+	"$HOME/.config/gtk-4.0"
+
+# Make every desktop folder a real folder this user can open.
+chown -R "$(id -un):$(id -gn)" "$HOME/Desktop" "$HOME/Documents" "$HOME/Downloads" \
+	"$HOME/Music" "$HOME/Pictures" "$HOME/Videos" 2>/dev/null || true
+find "$HOME/Desktop" -type d -exec chmod 755 {} \; 2>/dev/null || true
+
+# Do not leave extra files on the desktop that are not in the design.
+rm -f "$HOME/Desktop/Group 2.txt" "$HOME/Desktop/group2-os-wallpaper.png" 2>/dev/null || true
+
+cat > "$HOME/.config/gtk-3.0/bookmarks" <<EOF
+file://$HOME/Desktop Desktop
+file://$HOME/Documents Documents
+file://$HOME/Downloads Downloads
+file://$HOME/Music Music
+file://$HOME/Pictures Pictures
+file://$HOME/Videos Videos
+file://$HOME/Desktop/Fred%20Tuyishime Fred Tuyishime
+file://$HOME/Desktop/Tuyishimire%20Innocent Tuyishimire Innocent
+file://$HOME/Desktop/Armand%20Ikirezi Armand Ikirezi
+file://$HOME/Desktop/Ineza%20shami%20Lamick Ineza shami Lamick
+file://$HOME/Desktop/Gabiro%20Vladmir%20Brenn Gabiro Vladmir Brenn
+file://$HOME/Desktop/Irakoze%20Aline Irakoze Aline
+file://$HOME/Desktop/Niyonkuru%20Tajidini Niyonkuru Tajidini
+file://$HOME/Desktop/Projects Projects
+EOF
+cp -f "$HOME/.config/gtk-3.0/bookmarks" "$HOME/.config/gtk-4.0/bookmarks"
+
+if [ -f /etc/skel/.config/gtk-3.0/gtk.css ]; then
+	cp -f /etc/skel/.config/gtk-3.0/gtk.css "$HOME/.config/gtk-3.0/gtk.css"
+fi
+if [ -f /etc/skel/.config/gtk-4.0/gtk.css ]; then
+	cp -f /etc/skel/.config/gtk-4.0/gtk.css "$HOME/.config/gtk-4.0/gtk.css"
+fi
+
+ICON=/usr/share/group2-os/icons
+set_icon() {
+	folder=$1
+	icon=$2
+	[ -d "$folder" ] && [ -f "$icon" ] || return 0
+	command -v gio >/dev/null 2>&1 || return 0
+	gio set -t string "$folder" metadata::custom-icon "file://$icon" 2>/dev/null || true
+}
+
+set_pos() {
+	folder=$1
+	xy=$2
+	[ -d "$folder" ] || return 0
+	command -v gio >/dev/null 2>&1 || return 0
+	gio set -t string "$folder" metadata::nautilus-icon-position "$xy" 2>/dev/null || true
+}
+
+set_icon "$HOME/Desktop/Fred Tuyishime" "$ICON/folder-fred.png"
+set_icon "$HOME/Desktop/Tuyishimire Innocent" "$ICON/folder-innocent.png"
+set_icon "$HOME/Desktop/Armand Ikirezi" "$ICON/folder-armand.png"
+set_icon "$HOME/Desktop/Ineza shami Lamick" "$ICON/folder-ineza.png"
+set_icon "$HOME/Desktop/Gabiro Vladmir Brenn" "$ICON/folder-gabiro.png"
+set_icon "$HOME/Desktop/Irakoze Aline" "$ICON/folder-aline.png"
+set_icon "$HOME/Desktop/Niyonkuru Tajidini" "$ICON/folder-tajidini.png"
+set_icon "$HOME/Desktop/Projects" "$ICON/folder-projects.png"
+set_icon "$HOME/Desktop/Documents" "$ICON/folder-documents.png"
+set_icon "$HOME/Desktop/Pictures" "$ICON/folder-pictures.png"
+set_icon "$HOME/Desktop/Music" "$ICON/folder-music.png"
+set_icon "$HOME/Desktop/Videos" "$ICON/folder-videos.png"
+set_icon "$HOME/Desktop/Trash" "$ICON/folder-trash.png"
+
+# 3-column grid on the left, matching the design.
+set_pos "$HOME/Desktop/Fred Tuyishime" "40,40"
+set_pos "$HOME/Desktop/Tuyishimire Innocent" "150,40"
+set_pos "$HOME/Desktop/Armand Ikirezi" "260,40"
+set_pos "$HOME/Desktop/Ineza shami Lamick" "40,150"
+set_pos "$HOME/Desktop/Gabiro Vladmir Brenn" "150,150"
+set_pos "$HOME/Desktop/Irakoze Aline" "260,150"
+set_pos "$HOME/Desktop/Niyonkuru Tajidini" "40,260"
+set_pos "$HOME/Desktop/Projects" "150,260"
+set_pos "$HOME/Desktop/Documents" "260,260"
+set_pos "$HOME/Desktop/Pictures" "40,370"
+set_pos "$HOME/Desktop/Music" "150,370"
+set_pos "$HOME/Desktop/Videos" "260,370"
+set_pos "$HOME/Desktop/Trash" "40,480"
+
+if command -v gsettings >/dev/null 2>&1; then
+	gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/group2-os-desktop.png' 2>/dev/null || true
+	gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/group2-os-desktop.png' 2>/dev/null || true
+	gsettings set org.gnome.desktop.background picture-options 'zoom' 2>/dev/null || true
+	gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
+	gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-blue-dark' 2>/dev/null || true
+	gsettings set org.gnome.desktop.interface icon-theme 'Yaru-blue' 2>/dev/null || true
+	gsettings set org.gnome.shell favorite-apps "['group2-suite.desktop', 'group2-assistant.desktop', 'group2-install.desktop', 'group2-about.desktop', 'group2-appearance.desktop', 'group2-terminal.desktop', 'org.gnome.Terminal.desktop', 'firefox_firefox.desktop', 'firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Settings.desktop']" 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'BOTTOM' 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock autohide false 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock show-show-apps-button true 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 42 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock transparency-mode 'FIXED' 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.72 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock custom-background-color true 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock background-color 'rgb(10,26,48)' 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.dash-to-dock disable-overview-on-startup true 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.ding show-home false 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.ding show-trash false 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.ding show-volumes false 2>/dev/null || true
+	gsettings set org.gnome.shell.extensions.ding icon-size 'large' 2>/dev/null || true
+	gsettings set org.gnome.nautilus.preferences click-policy 'single' 2>/dev/null || true
+fi
+if command -v gnome-extensions >/dev/null 2>&1; then
+	gnome-extensions enable ding@rastersoft.com 2>/dev/null || true
+	gnome-extensions enable ubuntu-dock@ubuntu.com 2>/dev/null || true
+fi

@@ -1,0 +1,86 @@
+#!/bin/sh
+# Change desktop wallpaper and dark / light theme (Group 2 OS).
+set -u
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+WALLDIR=/usr/share/backgrounds/group2-os
+if [ ! -d "$WALLDIR" ]; then
+	WALLDIR=/usr/share/backgrounds
+fi
+
+apply_theme() {
+	mode=$1
+	if ! command -v gsettings >/dev/null 2>&1; then
+		return 0
+	fi
+	case "$mode" in
+		dark)
+			gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
+			gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-blue-dark' 2>/dev/null || true
+			gsettings set org.gnome.desktop.wm.preferences theme 'Yaru-blue-dark' 2>/dev/null || true
+			;;
+		light)
+			gsettings set org.gnome.desktop.interface color-scheme 'prefer-light' 2>/dev/null || true
+			gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-blue' 2>/dev/null || true
+			gsettings set org.gnome.desktop.wm.preferences theme 'Yaru-blue' 2>/dev/null || true
+			;;
+	esac
+}
+
+apply_wallpaper() {
+	file=$1
+	[ -f "$file" ] || return 1
+	uri="file://$file"
+	if command -v gsettings >/dev/null 2>&1; then
+		gsettings set org.gnome.desktop.background picture-uri "$uri" 2>/dev/null || true
+		gsettings set org.gnome.desktop.background picture-uri-dark "$uri" 2>/dev/null || true
+		gsettings set org.gnome.desktop.background picture-options 'zoom' 2>/dev/null || true
+	fi
+	return 0
+}
+
+if ! command -v zenity >/dev/null 2>&1; then
+	printf 'Group 2 OS appearance\n\nUse Settings → Appearance, or install zenity.\n'
+	printf 'Wallpapers: %s\n' "$WALLDIR"
+	exit 0
+fi
+
+choice=$(zenity --list --title="Group 2 OS — Appearance" --width=520 --height=420 \
+	--text="Choose dark or light theme, or pick a wallpaper." \
+	--column="Option" --column="Description" \
+	"dark" "Dark theme (default Group 2 OS look)" \
+	"light" "Light / white theme" \
+	"wallpaper" "Choose a Group 2 OS wallpaper…" \
+	"settings" "Open Settings → Appearance" 2>/dev/null) || exit 0
+
+case "$choice" in
+	dark) apply_theme dark ;;
+	light) apply_theme light ;;
+	settings)
+		if command -v gnome-control-center >/dev/null 2>&1; then
+			gnome-control-center appearance >/dev/null 2>&1 &
+		fi
+		;;
+	wallpaper)
+		list=$(mktemp)
+		for f in "$WALLDIR"/*.png "$WALLDIR"/*.jpg; do
+			[ -f "$f" ] || continue
+			base=$(basename "$f")
+			case "$base" in
+				group2-os-desktop.png) label="Group 2 landscape (default)" ;;
+				group2-os-login.png) label="Login lake (night)" ;;
+				group2-os-boot.png) label="Boot splash style" ;;
+				group2-os-light.png) label="Light sky" ;;
+				*) label="$base" ;;
+			esac
+			printf '%s|%s\n' "$label" "$f" >> "$list"
+		done
+		[ -s "$list" ] || { rm -f "$list"; exit 0; }
+		pick=$(zenity --list --title="Wallpaper" --width=480 --height=360 \
+			--text="Pick a wallpaper for your desktop." \
+			--column="Name" --column="File" < "$list" 2>/dev/null) || true
+		rm -f "$list"
+		[ -n "$pick" ] && apply_wallpaper "$pick"
+		;;
+esac
+exit 0

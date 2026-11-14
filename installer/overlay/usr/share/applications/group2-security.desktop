@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Security & Privacy
+Name[rw]=Umutekano n'Ibanga
+Comment=Firewall, updates, privacy tips
+Exec=/usr/local/bin/group2-security
+Icon=security-high
+Terminal=false
+Type=Application
+Categories=System;Security;
+StartupNotify=true

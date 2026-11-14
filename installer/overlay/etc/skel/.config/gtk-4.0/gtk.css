@@ -1,0 +1,44 @@
+/* Group 2 OS — GTK4 / Nautilus dark Files theme */
+@define-color group2_bg #071422;
+@define-color group2_sidebar #0a1a30;
+@define-color group2_accent #1ea7ff;
+@define-color group2_text #e8f4ff;
+
+window {
+  background-color: @group2_bg;
+  color: @group2_text;
+}
+
+.nautilus-window {
+  background-color: @group2_bg;
+  color: @group2_text;
+}
+
+.sidebar,
+.navigation-sidebar {
+  background-color: @group2_sidebar;
+  color: @group2_text;
+}
+
+.navigation-sidebar row:selected {
+  background-color: #155a9c;
+  color: #ffffff;
+  border-radius: 12px;
+}
+
+headerbar {
+  background-color: #0a1a30;
+  color: @group2_text;
+}
+
+button.suggested-action {
+  background: #1ea7ff;
+  color: #ffffff;
+  border-radius: 18px;
+}
+
+entry {
+  background-color: #102544;
+  color: @group2_text;
+  border-radius: 18px;
+}

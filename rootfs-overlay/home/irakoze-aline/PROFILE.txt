@@ -1,0 +1,5 @@
+GROUP 2 OS member profile
+Name: Irakoze Aline
+Login: aline
+Home: /home/irakoze-aline
+Desktop folder: Irakoze Aline

@@ -1,0 +1,79 @@
+#!/bin/sh
+# Install GROUP 2 OS — professional guided steps, then real graphical installer.
+set -eu
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+
+TITLE="Install Group 2 OS"
+
+intro=$(cat <<'EOF'
+GROUP 2 OS installer
+LEARN • BUILD • CREATE • TOGETHER
+
+You will use the real graphical installer. Complete every required step:
+
+Step 4 — Start Group 2 OS
+• At the boot menu choose: Try or Install Group 2 OS
+• Then open: Install Group 2 OS (this app)
+
+Step 5 — Configure the installation
+• Select your preferred language
+• Choose your keyboard layout
+• Connect to Wi-Fi if available
+• Select installation type and optional software
+
+Step 6 — Choose disk installation
+• Install alongside Windows (if supported), or
+• Erase disk and install Group 2 OS, or
+• Manual partitioning
+WARNING: Erase disk permanently deletes files. Back up first.
+
+Step 7 — Set up your account
+• Name, computer name, username, password
+• Time zone (example: Kigali, Rwanda / Africa/Kigali)
+
+Step 8 — Finish installation
+1) Click Install and wait
+2) Restart when prompted
+3) Remove the USB/ISO when instructed
+4) Log in with YOUR new password
+5) Connect to the internet and install updates
+
+After Install, Sign Out and Restart always return to the Group 2 OS login screen.
+EOF
+)
+
+if command -v zenity >/dev/null 2>&1; then
+	zenity --info --title="$TITLE" --width=560 --height=520 --text="$intro" 2>/dev/null || true
+	zenity --question --title="$TITLE" --width=420 \
+		--ok-label="Start installer" --cancel-label="Cancel" \
+		--text="Have you backed up important files if you will erase a disk?\n\nClick Start installer to continue." \
+		2>/dev/null || exit 0
+else
+	printf '%s\n' "$intro"
+fi
+
+# Prefer the real Ubuntu desktop bootstrap snap (full installer).
+for cmd in \
+	ubuntu-desktop-bootstrap \
+	/snap/bin/ubuntu-desktop-bootstrap \
+	ubuntu-desktop-installer \
+	/snap/bin/ubuntu-desktop-installer \
+	ubiquity \
+	calamares
+do
+	if command -v "$cmd" >/dev/null 2>&1 || [ -x "$cmd" ]; then
+		exec "$cmd" "$@"
+	fi
+done
+
+if [ -f /var/lib/snapd/desktop/applications/ubuntu-desktop-bootstrap_ubuntu-desktop-bootstrap.desktop ]; then
+	exec gtk-launch ubuntu-desktop-bootstrap_ubuntu-desktop-bootstrap 2>/dev/null || \
+		exec gio launch /var/lib/snapd/desktop/applications/ubuntu-desktop-bootstrap_ubuntu-desktop-bootstrap.desktop
+fi
+
+if command -v zenity >/dev/null 2>&1; then
+	zenity --error --title="Group 2 OS" --width=420 \
+		--text="The graphical installer was not found.\nBoot with: Try or Install Group 2 OS." 2>/dev/null || true
+fi
+echo "No graphical installer found on this image."
+exit 1

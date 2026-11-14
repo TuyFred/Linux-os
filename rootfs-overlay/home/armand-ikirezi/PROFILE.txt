@@ -1,0 +1,5 @@
+GROUP 2 OS member profile
+Name: Armand Ikirezi
+Login: armand
+Home: /home/armand-ikirezi
+Desktop folder: Armand Ikirezi

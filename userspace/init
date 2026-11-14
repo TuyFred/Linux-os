@@ -1,0 +1,52 @@
+#!/bin/sh
+# GROUP 2 OS PID 1
+# Mounts the system, shows the boot screen, then starts login.
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export TERM="${TERM:-linux}"
+export HOME=/root
+export PS1="GROUP2-OS:\w # "
+
+mkdir -p /proc /sys /dev /dev/pts /dev/shm /tmp /run /mnt /root /home
+
+mount -t proc     proc     /proc    2>/dev/null
+mount -t sysfs    sysfs    /sys     2>/dev/null
+mount -t devtmpfs devtmpfs /dev     2>/dev/null || {
+	mdev -s 2>/dev/null
+}
+mount -t devpts   devpts   /dev/pts 2>/dev/null
+mount -t tmpfs    tmpfs    /tmp     2>/dev/null
+mount -t tmpfs    tmpfs    /run     2>/dev/null
+
+hostname -F /etc/hostname 2>/dev/null || hostname group2-os
+
+if [ -x /bin/busybox ]; then
+	/bin/busybox --install -s 2>/dev/null
+fi
+
+clear
+if [ -f /usr/share/group2-os/boot.txt ]; then
+	cat /usr/share/group2-os/boot.txt
+else
+	printf '\n  GROUP 2 OS — Linux\n  LEARN • BUILD • CREATE • TOGETHER\n\n  Loading system...\n'
+fi
+
+i=0
+while [ "$i" -lt 20 ]; do
+	printf '#'
+	i=$((i + 1))
+	sleep 0.08 2>/dev/null || sleep 1
+done
+printf '\n\n'
+sleep 1
+
+while true; do
+	if [ -x /usr/bin/g2-login ]; then
+		/usr/bin/g2-login || continue
+	fi
+	if [ -x /usr/bin/g2-desktop ]; then
+		/usr/bin/g2-desktop
+	else
+		exec /bin/sh
+	fi
+done

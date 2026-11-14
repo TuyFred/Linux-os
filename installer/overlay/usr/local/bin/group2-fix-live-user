@@ -1,0 +1,103 @@
+#!/bin/sh
+# Make Terminal work: every desktop account must use a real shell.
+# Installed accounts keep their own full name. Live session is branded.
+set -u
+
+live_session() {
+	grep -q 'boot=casper' /proc/cmdline 2>/dev/null && return 0
+	[ -d /run/casper ] && return 0
+	[ -d /cdrom/casper ] && return 0
+	grep -q ' /cdrom ' /proc/mounts 2>/dev/null && return 0
+	return 1
+}
+
+ensure_bash_shell() {
+	name=$1
+	[ -n "$name" ] || return 0
+	id "$name" >/dev/null 2>&1 || return 0
+	if [ -x /bin/bash ]; then
+		sed -i "s|^$name:\\([^:]*:[^:]*:[^:]*:[^:]*:[^:]*:\\).*|$name:\\1/bin/bash|" /etc/passwd 2>/dev/null || true
+		usermod -s /bin/bash "$name" >/dev/null 2>&1 || true
+	fi
+	passwd -u "$name" >/dev/null 2>&1 || true
+	chage -d "$(date +%Y-%m-%d)" -E -1 -I -1 -m 0 -M 99999 "$name" >/dev/null 2>&1 || true
+	home=$(getent passwd "$name" | cut -d: -f6)
+	if [ -n "$home" ]; then
+		mkdir -p "$home" "$home/Desktop" "$home/Documents" "$home/Downloads" \
+			"$home/Music" "$home/Pictures" "$home/Videos" 2>/dev/null || true
+		# Do not chown -R the whole home on an installed user (slow / risky).
+		[ -f "$home/.bashrc" ] || cp -f /etc/skel/.bashrc "$home/.bashrc" 2>/dev/null || true
+		[ -f "$home/.profile" ] || cp -f /etc/skel/.profile "$home/.profile" 2>/dev/null || true
+		chown "$name:$name" "$home/.bashrc" "$home/.profile" 2>/dev/null || true
+	fi
+}
+
+fix_live_account() {
+	name=$1
+	ensure_bash_shell "$name"
+	id "$name" >/dev/null 2>&1 || return 0
+	usermod -c "Group 2 OS" "$name" >/dev/null 2>&1 || true
+	usermod -aG sudo,adm "$name" >/dev/null 2>&1 || true
+	home=$(getent passwd "$name" | cut -d: -f6)
+	if [ -n "$home" ] && [ -d "$home" ]; then
+		chown -R "$name:$name" "$home" 2>/dev/null || true
+	fi
+	echo "$name:group2" | chpasswd >/dev/null 2>&1 || true
+}
+
+# Defaults so Settings → Users → Add User gets a working Terminal.
+if [ -f /etc/adduser.conf ]; then
+	if grep -q '^#*DSHELL=' /etc/adduser.conf 2>/dev/null; then
+		sed -i 's|^#*DSHELL=.*|DSHELL=/bin/bash|' /etc/adduser.conf 2>/dev/null || true
+	else
+		printf '\nDSHELL=/bin/bash\n' >> /etc/adduser.conf
+	fi
+fi
+if [ -f /etc/default/useradd ]; then
+	sed -i 's|^#*SHELL=.*|SHELL=/bin/bash|' /etc/default/useradd 2>/dev/null || true
+fi
+grep -qx '/bin/bash' /etc/shells 2>/dev/null || echo '/bin/bash' >> /etc/shells
+
+if live_session; then
+	for name in ubuntu group2 group; do
+		fix_live_account "$name"
+	done
+	if getent passwd 1000 >/dev/null 2>&1; then
+		fix_live_account "$(id -un 1000)"
+	fi
+	mkdir -p /etc/sudoers.d /etc/polkit-1/rules.d
+	chown root:root /etc/sudoers /etc/sudoers.d /etc/sudoers.d/* 2>/dev/null || true
+	chmod 440 /etc/sudoers /etc/sudoers.d/* 2>/dev/null || true
+	chmod 755 /etc/sudoers.d 2>/dev/null || true
+	cat > /etc/sudoers.d/group2-live <<'EOF'
+ubuntu ALL=(ALL) NOPASSWD:ALL
+group2 ALL=(ALL) NOPASSWD:ALL
+group ALL=(ALL) NOPASSWD:ALL
+EOF
+	chmod 440 /etc/sudoers.d/group2-live
+	chown root:root /etc/sudoers.d/group2-live
+	cat > /etc/polkit-1/rules.d/49-group2-live.rules <<'EOF'
+polkit.addRule(function(action, subject) {
+    if (subject.local && subject.active &&
+        (subject.user == "ubuntu" || subject.user == "group2" || subject.user == "group")) {
+        return polkit.Result.YES;
+    }
+});
+EOF
+	chown root:root /etc/polkit-1/rules.d/49-group2-live.rules
+else
+	# Installed system: only repair broken shells. Keep the person's real name.
+	while IFS=: read -r name _ uid _ _ home shell; do
+		case "$uid" in
+			''|*[!0-9]*) continue ;;
+		esac
+		[ "$uid" -ge 1000 ] || continue
+		[ "$uid" -lt 65534 ] || continue
+		case "$shell" in
+			*/nologin|/bin/false|/usr/bin/false|'')
+				ensure_bash_shell "$name"
+				;;
+		esac
+	done < /etc/passwd
+fi
+exit 0

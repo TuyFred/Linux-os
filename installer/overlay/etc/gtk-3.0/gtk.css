@@ -1,0 +1,60 @@
+/* Group 2 OS — Files / GTK look (dark navy, blue accent) */
+@define-color group2_bg #071422;
+@define-color group2_sidebar #0a1a30;
+@define-color group2_card #0d2240;
+@define-color group2_accent #1ea7ff;
+@define-color group2_text #e8f4ff;
+
+window, .background {
+  background-color: @group2_bg;
+  color: @group2_text;
+}
+
+.nautilus-window,
+.nautilus-window > overlay,
+.nautilus-window toolbar,
+.nautilus-window headerbar {
+  background-color: @group2_bg;
+  color: @group2_text;
+}
+
+.nautilus-window .sidebar,
+.nautilus-window places-sidebar,
+.nautilus-window .navigation-sidebar {
+  background-color: @group2_sidebar;
+  color: @group2_text;
+}
+
+.nautilus-window .sidebar row:selected,
+.nautilus-window .navigation-sidebar row:selected {
+  background-color: #155a9c;
+  color: #ffffff;
+  border-radius: 10px;
+}
+
+headerbar, .titlebar {
+  background-image: none;
+  background-color: #0a1a30;
+  color: @group2_text;
+  border-bottom: 1px solid #16325a;
+}
+
+button.suggested-action,
+button.default {
+  background-image: linear-gradient(90deg, #1ea7ff, #3d6bff);
+  color: #ffffff;
+  border: none;
+  border-radius: 18px;
+}
+
+entry {
+  background-color: #102544;
+  color: @group2_text;
+  border: 1px solid #2d6fb8;
+  border-radius: 18px;
+}
+
+scrollbar slider {
+  background-color: #1ea7ff;
+  border-radius: 8px;
+}

@@ -1,0 +1,31 @@
+#!/bin/sh
+# Group 2 Tools hub — all innovations in one place
+set -u
+. /usr/local/lib/group2/common.sh
+
+choice=$(g2_zenity --list --title="$APP_SUITE" --width=520 --height=420 \
+	--text="Group 2 OS — LEARN • BUILD • CREATE • TOGETHER" \
+	--column="ID" --column="Tool" \
+	"assistant" "🤖 $APP_ASSISTANT" \
+	"health" "🩺 $APP_HEALTH" \
+	"monitor" "📊 $APP_MONITOR" \
+	"optimizer" "🧹 $APP_OPTIMIZER" \
+	"security" "🔒 $APP_SECURITY" \
+	"how" "📘 $APP_HOWBUILT" \
+	"lang" "🌐 $APP_LANGUAGE" \
+	"accounts" "👤 ${APP_ACCOUNTS:-Group 2 Accounts}" \
+	"appear" "🎨 Appearance" \
+	"close" "$BTN_CLOSE" 2>/dev/null) || exit 0
+
+case "$choice" in
+	assistant) exec /usr/local/bin/group2-assistant ;;
+	health) exec /usr/local/bin/group2-health ;;
+	monitor) exec /usr/local/bin/group2-monitor ;;
+	optimizer) exec /usr/local/bin/group2-optimizer ;;
+	security) exec /usr/local/bin/group2-security ;;
+	how) exec /usr/local/bin/group2-how-built ;;
+	lang) exec /usr/local/bin/group2-language ;;
+	accounts) exec /usr/local/bin/group2-accounts ;;
+	appear) exec /usr/local/bin/group2-appearance ;;
+esac
+exit 0

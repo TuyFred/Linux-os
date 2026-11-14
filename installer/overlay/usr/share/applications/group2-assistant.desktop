@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Group 2 Assistant
+Name[rw]=Umufasha wa Group 2
+Comment=Group 2 Assistant — chat, microphone, voice, and online search
+Comment[rw]=Umufasha wa Group 2 — ikiganiro, mikoro, ijwi, n'ishakisha
+Exec=/usr/bin/python3 /usr/local/lib/group2/assistant_ui.py
+Icon=help-browser
+Terminal=false
+Type=Application
+Categories=System;Utility;
+StartupNotify=false
+Keywords=help;ai;assistant;wifi;kinyarwanda;

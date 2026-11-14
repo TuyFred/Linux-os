@@ -1,0 +1,190 @@
+/* Group 2 OS login — match signed design: lake, welcome, rounded password, blue Sign In */
+
+#lockDialogGroup {
+  background-color: #071422;
+  background-image: url("file:///usr/share/backgrounds/group2-os-login.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.login-dialog,
+.unlock-dialog {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 12px;
+}
+
+/* Large built-in clock (when shown) — also reinforced by group2-login-clock extension */
+.screen-shield-clock,
+.screen-shield-clock-time,
+.unlock-dialog-clock-time,
+.login-dialog-clock-time {
+  color: #ffffff;
+  font-size: 48px;
+  font-weight: 600;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+.screen-shield-clock-date,
+.unlock-dialog-clock-date,
+.login-dialog-clock-date {
+  color: #d7ebff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.login-dialog-banner-view .login-dialog-banner,
+.login-dialog-banner {
+  color: #e8f4ff;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  padding: 6px 12px;
+}
+
+.login-dialog-logo-bin,
+.unlock-dialog-logo-bin {
+  padding-top: 8px;
+  padding-bottom: 4px;
+}
+
+.login-dialog-title,
+.unlock-dialog-title {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.login-dialog-prompt-label,
+.caption,
+.login-dialog-message {
+  color: #c5dcf5;
+}
+
+.login-dialog-user-list-view,
+.unlock-dialog-user-list-view {
+  background-color: rgba(7, 20, 34, 0.25);
+  border-radius: 22px;
+  padding: 8px;
+}
+
+.login-dialog-user-list-item,
+.user-widget {
+  background-color: rgba(8, 24, 48, 0.55);
+  border: 1px solid rgba(90, 170, 255, 0.30);
+  border-radius: 18px;
+  color: #f4f9ff;
+  padding: 8px 12px;
+}
+
+.login-dialog-user-list-item:hover,
+.login-dialog-user-list-item:focus,
+.login-dialog-user-list-item:selected,
+.user-widget:hover {
+  background-color: rgba(30, 167, 255, 0.28);
+  border-color: rgba(30, 167, 255, 0.7);
+}
+
+.user-widget-label {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Password field — dark glass, rounded, blue edge (design mockup) */
+.login-dialog StEntry,
+.unlock-dialog StEntry,
+.login-dialog-prompt-entry {
+  background-color: rgba(10, 28, 52, 0.82);
+  border: 1.5px solid rgba(100, 190, 255, 0.75);
+  border-radius: 16px;
+  color: #e8f4ff;
+  padding: 16px 22px;
+  font-size: 15px;
+  caret-color: #1ea7ff;
+  min-height: 26px;
+  min-width: 280px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.login-dialog StEntry:focus,
+.unlock-dialog StEntry:focus {
+  border-color: #1ea7ff;
+  background-color: rgba(12, 34, 64, 0.90);
+}
+
+/* Sign In — bright blue pill (design mockup) */
+.login-dialog StButton,
+.unlock-dialog StButton,
+.login-dialog .modal-dialog-button,
+.unlock-dialog .modal-dialog-button,
+.login-dialog-button,
+.login-dialog-session-list-button {
+  background-color: #1ea7ff;
+  background-gradient-direction: none;
+  border: none;
+  border-radius: 14px;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  padding: 12px 48px;
+  min-width: 200px;
+  box-shadow: 0 10px 24px rgba(30, 167, 255, 0.35);
+}
+
+.login-dialog StButton:hover,
+.unlock-dialog StButton:hover,
+.login-dialog-session-list-button:hover {
+  background-color: #3bb8ff;
+}
+
+.login-dialog StButton:active,
+.unlock-dialog StButton:active {
+  background-color: #1488d4;
+}
+
+.login-dialog-session-list-button,
+.system-menu-button,
+.power-button {
+  background-color: rgba(8, 24, 48, 0.72);
+  border: 1px solid rgba(90, 170, 255, 0.45);
+  border-radius: 22px;
+  color: #e8f4ff;
+  min-width: 0;
+  padding: 10px 16px;
+  box-shadow: none;
+}
+
+/* Keep top-bar clock readable on login */
+#panel,
+#panel .panel-button {
+  color: #e8f4ff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+#panel .clock-display,
+#panel .clock {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.popup-menu,
+.popup-menu-boxpointer {
+  background-color: rgba(7, 20, 34, 0.94);
+  border: 1px solid rgba(90, 170, 255, 0.35);
+  color: #e8f4ff;
+}
+
+.popup-menu-item {
+  color: #e8f4ff;
+}
+
+.popup-menu-item:hover,
+.popup-menu-item:active,
+.popup-menu-item:selected {
+  background-color: rgba(30, 167, 255, 0.35);
+  color: #ffffff;
+}

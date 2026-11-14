@@ -1,0 +1,11 @@
+# Allow the desktop session to repair a blocked live account without a password.
+ubuntu ALL=(root) NOPASSWD: /usr/local/bin/group2-fix-live-user
+group2 ALL=(root) NOPASSWD: /usr/local/bin/group2-fix-live-user
+# Start only the local assistant backend. The key file is not readable by the desktop user.
+ubuntu ALL=(root) NOPASSWD: /usr/local/bin/group2-gemini-backend
+group2 ALL=(root) NOPASSWD: /usr/local/bin/group2-gemini-backend
+%sudo ALL=(root) NOPASSWD: /usr/local/bin/group2-gemini-backend
+# Administrators may create accounts and set Administrator or Standard privilege.
+%sudo ALL=(root) NOPASSWD: /usr/local/sbin/group2-account-helper
+ubuntu ALL=(root) NOPASSWD: /usr/local/sbin/group2-account-helper
+group2 ALL=(root) NOPASSWD: /usr/local/sbin/group2-account-helper

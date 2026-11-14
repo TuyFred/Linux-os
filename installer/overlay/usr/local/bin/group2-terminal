@@ -1,0 +1,29 @@
+#!/bin/sh
+# Always open a real shell. Never use /usr/sbin/nologin from a broken account.
+set -u
+SHELL=/bin/bash
+export SHELL
+# Soft-repair the current account if the boot fix has not finished yet.
+me=$(id -un 2>/dev/null || true)
+if [ -n "$me" ] && command -v getent >/dev/null 2>&1; then
+	shell=$(getent passwd "$me" 2>/dev/null | cut -d: -f7)
+	case "$shell" in
+		*/nologin|/bin/false|/usr/bin/false|'')
+			# Without root we cannot rewrite passwd; still start bash below.
+			true
+			;;
+	esac
+fi
+if command -v gnome-terminal >/dev/null 2>&1; then
+	exec gnome-terminal --window -- /bin/bash --login
+fi
+if command -v kgx >/dev/null 2>&1; then
+	exec kgx -- /bin/bash --login
+fi
+if command -v gnome-console >/dev/null 2>&1; then
+	exec gnome-console -- /bin/bash --login
+fi
+if command -v x-terminal-emulator >/dev/null 2>&1; then
+	exec x-terminal-emulator -e /bin/bash --login
+fi
+exec /bin/bash --login

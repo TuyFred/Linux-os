@@ -1,0 +1,14 @@
+#!/bin/sh
+# Open Group 2 Assistant immediately. Do not wait on the network service.
+UI=/usr/local/lib/group2/assistant_ui.py
+if [ "${1:-}" = "--selftest" ] || [ "${GROUP2_SELFTEST:-}" = 1 ]; then
+	python3 /usr/local/lib/group2/gemini_backend.py --selftest || exit 1
+	python3 "$UI" --selftest || exit 1
+	echo "SELFTEST assistant PASS"
+	exit 0
+fi
+if ! python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:47321/v1/health", timeout=1)' >/dev/null 2>&1; then
+	systemctl start group2-gemini.service >/dev/null 2>&1 || true
+	sudo -n /usr/local/bin/group2-gemini-backend >/dev/null 2>&1 &
+fi
+exec python3 "$UI" "$@"

@@ -1,0 +1,6 @@
+# GROUP 2 OS build artifacts
+build/
+*.iso
+installer/secrets/
+linux-master/linux-master/.config
+linux-master/linux-master/.config.old
